@@ -6,6 +6,7 @@ import cors       from 'cors';
 import helmet     from 'helmet';
 import morgan     from 'morgan';
 import 'dotenv/config'; // Loads .env into process.env automatically
+import { connectDB } from './config/db.js';
 
 const app  = express();
 const PORT = process.env.PORT || 5000;
@@ -134,6 +135,14 @@ app.listen(PORT, () => {
   console.log(`  ➜   Env:     ${process.env.NODE_ENV || 'development'}`);
   console.log(`  ➜   Origins: ${allowedOrigins.join(' | ')}`);
   console.log('');
+});
+
+connectDB().then(() => {
+  app.listen(PORT, () => {
+    console.log(`  🍳  Chef's Diary API running`);
+    console.log(`  ➜   Local:   http://localhost:${PORT}/api/health`);
+    console.log(`  ➜   Env:     ${process.env.NODE_ENV || 'development'}`);
+  });
 });
 
 export default app;
