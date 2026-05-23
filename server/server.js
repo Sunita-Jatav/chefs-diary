@@ -128,20 +128,13 @@ app.use((err, req, res, next) => {
 // process.env.PORT is automatically provided by Render in production.
 // We fall back to 5000 for local development.
 // ─────────────────────────────────────────────────────────────────
-app.listen(PORT, () => {
-  console.log('');
-  console.log('  🍳  Chef\'s Diary API');
-  console.log(`  ➜   Local:   http://localhost:${PORT}`);
-  console.log(`  ➜   Env:     ${process.env.NODE_ENV || 'development'}`);
-  console.log(`  ➜   Origins: ${allowedOrigins.join(' | ')}`);
-  console.log('');
-});
-
 connectDB().then(() => {
   app.listen(PORT, () => {
-    console.log(`  🍳  Chef's Diary API running`);
-    console.log(`  ➜   Local:   http://localhost:${PORT}/api/health`);
+    console.log('');
+    console.log(`  🍳  Chef's Diary API`);
+    console.log(`  ➜   Local:   http://localhost:${PORT}`);
     console.log(`  ➜   Env:     ${process.env.NODE_ENV || 'development'}`);
+    console.log('');
   });
 });
 
