@@ -2,96 +2,158 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&display=swap');
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-/* ── CSS Variables ─────────────────────────────────────────────── */
-:root {
-  --parchment:    #f5ede0;
-  --terracotta:   #c1614f;
-  --saffron:      #e6a817;
-  --ink:          #2c1f0e;
-  --ink-muted:    #7a6a54;
-  --sage:         #7a9e72;
-  --card-bg:      #fdfaf4;
-  --border:       rgba(44, 31, 14, 0.12);
+@theme {
+  --color-parchment:        #f5ede0;
+  --color-parchment-50:     #fdfaf4;
+  --color-parchment-100:    #f9f2e3;
+  --color-parchment-200:    #f2e4c4;
+  --color-terracotta:       #c1614f;
+  --color-terracotta-light: #e8957a;
+  --color-terracotta-dark:  #9a3d2e;
+  --color-saffron:          #e6a817;
+  --color-saffron-light:    #f5c96a;
+  --color-saffron-dark:     #b07c00;
+  --color-ink:              #2c1f0e;
+  --color-ink-light:        #5c4f3a;
+  --color-ink-muted:        #7a6a54;
+  --color-sage:             #7a9e72;
+  --color-sage-light:       #d4e4d0;
+  --color-sage-dark:        #4a6e42;
+
+  --font-display: "Playfair Display", Georgia, serif;
+  --font-body:    "DM Sans", system-ui, sans-serif;
+
+  --shadow-warm-sm: 0 2px 8px rgba(44, 31, 14, 0.08);
+  --shadow-warm:    0 4px 20px rgba(44, 31, 14, 0.12);
+  --shadow-warm-lg: 0 8px 40px rgba(44, 31, 14, 0.18);
 }
 
 /* ── Base ──────────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; }
-
 html { scroll-behavior: smooth; }
 
 body {
-  font-family: 'DM Sans', system-ui, sans-serif;
-  background-color: var(--parchment);
-  color: var(--ink);
+  font-family: var(--font-body);
+  background-color: var(--color-parchment);
+  color: var(--color-ink);
   line-height: 1.6;
-  /* Subtle grain texture — gives parchment warmth */
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
 }
 
-/* ── Typography ────────────────────────────────────────────────── */
 h1, h2, h3, h4 {
-  font-family: 'Playfair Display', Georgia, serif;
+  font-family: var(--font-display);
   line-height: 1.2;
-  color: var(--ink);
+  color: var(--color-ink);
 }
 
-/* ── Scrollbar ─────────────────────────────────────────────────── */
 ::-webkit-scrollbar       { width: 6px; }
-::-webkit-scrollbar-track { background: var(--parchment); }
-::-webkit-scrollbar-thumb { background: var(--terracotta); border-radius: 3px; }
+::-webkit-scrollbar-track { background: var(--color-parchment); }
+::-webkit-scrollbar-thumb { background: var(--color-terracotta); border-radius: 3px; }
 
-/* ── Utility Classes ───────────────────────────────────────────── */
-@layer components {
-  .btn-primary {
-    @apply bg-terracotta text-white font-body font-medium px-6 py-2.5 rounded-xl
-           transition-all duration-200 hover:bg-terracotta-dark
-           active:scale-95 shadow-warm-sm;
-  }
-  .btn-secondary {
-    @apply bg-parchment text-ink font-body font-medium px-6 py-2.5 rounded-xl
-           border border-[var(--border)] transition-all duration-200
-           hover:bg-parchment-100 active:scale-95;
-  }
-  .btn-ghost {
-    @apply text-ink-muted font-body font-medium px-4 py-2 rounded-lg
-           transition-all duration-200 hover:text-ink hover:bg-parchment-100;
-  }
-  .card {
-    @apply bg-[var(--card-bg)] rounded-2xl shadow-warm border border-[var(--border)];
-  }
-  .input {
-    @apply w-full bg-white border border-[var(--border)] rounded-xl px-4 py-3
-           font-body text-ink placeholder-ink-muted
-           focus:outline-none focus:ring-2 focus:ring-terracotta/30
-           focus:border-terracotta transition-all duration-200;
-  }
-  .section-title {
-    @apply font-display text-3xl font-bold text-ink;
-  }
-  .tag {
-    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium
-           bg-parchment-100 text-ink-muted border border-[var(--border)];
-  }
-  /* AI streaming text animation */
-  .streaming-cursor::after {
-    content: '▋';
-    animation: blink 0.7s step-end infinite;
-    color: var(--terracotta);
-  }
-  @keyframes blink {
-    0%, 100% { opacity: 1; }
-    50%       { opacity: 0; }
-  }
-  /* Fade-in animation for page loads */
-  .fade-in {
-    animation: fadeIn 0.4s ease-out;
-  }
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
+/* ── Component classes ─────────────────────────────────────────── */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--color-terracotta);
+  color: white;
+  font-weight: 500;
+  padding: 0.625rem 1.5rem;
+  border-radius: 0.75rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: var(--shadow-warm-sm);
+}
+.btn-primary:hover  { background-color: var(--color-terracotta-dark); }
+.btn-primary:active { transform: scale(0.95); }
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--color-parchment-100);
+  color: var(--color-ink);
+  font-weight: 500;
+  padding: 0.625rem 1.5rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(44,31,14,0.12);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-secondary:hover  { background-color: var(--color-parchment-200); }
+.btn-secondary:active { transform: scale(0.95); }
+.btn-secondary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-ink-muted);
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+.btn-ghost:hover { color: var(--color-ink); background-color: var(--color-parchment-100); }
+
+.card {
+  background-color: #fdfaf4;
+  border-radius: 1rem;
+  box-shadow: var(--shadow-warm);
+  border: 1px solid rgba(44,31,14,0.12);
+}
+
+.input {
+  width: 100%;
+  background-color: white;
+  border: 1px solid rgba(44,31,14,0.12);
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  transition: all 0.2s;
+  outline: none;
+}
+.input::placeholder { color: var(--color-ink-muted); }
+.input:focus {
+  border-color: var(--color-terracotta);
+  box-shadow: 0 0 0 3px rgba(193,97,79,0.15);
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background-color: var(--color-parchment-100);
+  color: var(--color-ink-muted);
+  border: 1px solid rgba(44,31,14,0.12);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.streaming-cursor::after {
+  content: '▋';
+  animation: blink 0.7s step-end infinite;
+  color: var(--color-terracotta);
+}
+
+.fade-in {
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
