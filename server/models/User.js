@@ -1,18 +1,4 @@
 // models/User.js — Chef's Diary User Schema
-//
-// This model serves two simultaneous purposes:
-//   1. Standard authentication (email, password, username)
-//   2. The "LinkedIn for Chefs" professional profile layer
-//
-// DESIGN PHILOSOPHY:
-//   - Skills and portfolio are EMBEDDED because they are always loaded
-//     together with the profile and are bounded in size.
-//   - Follower/following counts are DENORMALIZED integers for
-//     instant display on feed cards without expensive COUNT queries.
-//   - The actual follower graph (who follows whom) lives in Follow.js.
-//   - `password` is stored as a bcrypt hash; the raw plaintext is
-//     NEVER saved. select: false ensures it never leaks in queries.
-
 import mongoose from 'mongoose';
 import bcrypt   from 'bcryptjs';
 
@@ -22,54 +8,41 @@ const { Schema } = mongoose;
 // SUB-SCHEMAS
 // ─────────────────────────────────────────────────────────────────────────
 
-// A single endorsement record within a skill
-// _id: false because we don't need to reference individual endorsements
 const EndorsementSchema = new Schema({
-  user:        { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  endorsedAt:  { type: Date, default: Date.now },
+  user:       { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  endorsedAt: { type: Date, default: Date.now },
 }, { _id: false });
 
-// A single skill entry on the chef's public profile
-// Similar to LinkedIn's Skills section — community-endorsed
 const SkillSchema = new Schema({
   name: {
     type:     String,
     required: true,
     trim:     true,
-    // Examples: "Knife Skills", "Tempering Chocolate", "Sourdough Fermentation"
   },
   category: {
     type:    String,
     enum:    ['technique', 'cuisine', 'dietary', 'equipment', 'management', 'other'],
     default: 'technique',
   },
-  // endorsedBy stores the ObjectIds of users who endorsed this skill.
-  // WHY embed here instead of a separate Endorsement collection?
-  // A chef with 30 skills and 100 endorsers per skill = 3,000 ObjectIds.
-  // 3,000 × 12 bytes = 36KB — comfortably within MongoDB's 16MB doc limit.
-  // This lets us check "did @user endorse this skill?" with a fast $in query.
   endorsedBy:   [EndorsementSchema],
-  endorseCount: { type: Number, default: 0 }, // Denormalized for fast display
-}, { _id: true }); // _id: true so frontend can target individual skills for endorsement
+  endorseCount: { type: Number, default: 0 },
+}, { _id: true });
 
-// A professional experience entry — the chef's career timeline
-// Equivalent to a LinkedIn "Position" entry
 const PortfolioItemSchema = new Schema({
-  role:           { type: String, required: true, trim: true },  // "Head Pastry Chef"
-  establishment:  { type: String, required: true, trim: true },  // "The Ritz London"
-  location:       { type: String, trim: true },                  // "London, UK"
+  role:           { type: String, required: true, trim: true },
+  establishment:  { type: String, required: true, trim: true },
+  location:       { type: String, trim: true },
   employmentType: {
     type:    String,
     enum:    ['full-time', 'part-time', 'freelance', 'stage', 'popup', 'self-employed', 'apprenticeship'],
     default: 'full-time',
   },
   startDate:    { type: Date, required: true },
-  endDate:      { type: Date, default: null },    // null = current role
+  endDate:      { type: Date, default: null },
   isCurrentRole:{ type: Boolean, default: false },
   description:  { type: String, maxlength: 600, default: '' },
-  // Key achievements or highlights from this role (bullet points on the profile)
   highlights:   [{ type: String, maxlength: 200 }],
-  mediaUrl:     { type: String, default: '' },   // Photo from this workplace
+  mediaUrl:     { type: String, default: '' },
 }, { _id: true, timestamps: true });
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -78,31 +51,27 @@ const PortfolioItemSchema = new Schema({
 
 const UserSchema = new Schema(
   {
-    // ── Authentication ──────────────────────────────────────────────────
+    // ── Authentication ───────────────────────────────────────────────────
     email: {
       type:      String,
       required:  [true, 'Email is required'],
-      unique:    true,
-      lowercase: true, // Always stored as lowercase — prevents duplicate signups
+      unique:    true,       // unique: true auto-creates an index — no Schema.index() needed
+      lowercase: true,
       trim:      true,
       match:     [/^\S+@\S+\.\S+$/, 'Please provide a valid email address'],
     },
-    // Field is named 'password' but the stored value is ALWAYS a bcrypt hash.
-    // The pre-save hook below transforms it before it ever touches the database.
-    // select: false means password is NEVER returned by default in any query.
-    // To get it, you must explicitly do User.findOne().select('+password')
     password: {
       type:      String,
       required:  [true, 'Password is required'],
       minlength: [8, 'Password must be at least 8 characters'],
-      select:    false,
+      select:    false,      // Never returned in queries by default
     },
 
-    // ── Public Identity ─────────────────────────────────────────────────
+    // ── Public Identity ──────────────────────────────────────────────────
     username: {
       type:      String,
       required:  [true, 'Username is required'],
-      unique:    true,
+      unique:    true,       // unique: true auto-creates an index — no Schema.index() needed
       trim:      true,
       minlength: [3, 'Username must be at least 3 characters'],
       maxlength: [30, 'Username cannot exceed 30 characters'],
@@ -114,64 +83,47 @@ const UserSchema = new Schema(
       trim:      true,
       maxlength: 60,
     },
-    avatarUrl:    { type: String, default: '' },
-    coverImageUrl:{ type: String, default: '' },
-    bio:          { type: String, maxlength: 300, default: '' },
-    location:     { type: String, maxlength: 100, default: '' }, // "Mumbai, India"
+    avatarUrl:     { type: String, default: '' },
+    coverImageUrl: { type: String, default: '' },
+    bio:           { type: String, maxlength: 300, default: '' },
+    location:      { type: String, maxlength: 100, default: '' },
 
-    // ── Chef Profile — The "LinkedIn" Layer ─────────────────────────────
-    // This section transforms a basic user account into a culinary professional profile.
+    // ── Chef Profile — The LinkedIn Layer ───────────────────────────────
     culinaryTitle: {
       type:      String,
       trim:      true,
       default:   '',
       maxlength: 100,
-      // Examples: "Executive Pastry Chef", "Home Cook & Food Blogger"
     },
     culinaryPhilosophy: {
       type:      String,
       maxlength: 600,
       default:   '',
-      // The chef's personal statement — their "about me" as a culinary professional
     },
-    yearsOfExperience: { type: Number, default: 0, min: 0, max: 70 },
+    yearsOfExperience:  { type: Number, default: 0, min: 0, max: 70 },
+    cuisineSpecialties: [{ type: String, trim: true }],
+    dietaryExpertise:   [{ type: String, trim: true }],
+    skills:             [SkillSchema],
+    portfolio:          [PortfolioItemSchema],
 
-    // Arrays of strings — bounded, always displayed on profile
-    cuisineSpecialties: [{ type: String, trim: true }],  // ["Italian", "South Indian", "Molecular"]
-    dietaryExpertise:   [{ type: String, trim: true }],  // ["Vegan", "Gluten-Free", "Kosher"]
-
-    // Embedded sub-documents (see design rationale at top of file)
-    skills:    [SkillSchema],
-    portfolio: [PortfolioItemSchema],
-
-    // ── Social Graph Counters (Denormalized) ────────────────────────────
-    // These integers are maintained by the Follow.js model's post-save hooks.
-    // WHY store them here if Follow.js has the ground truth?
-    // Because displaying "1,204 followers" on 50 feed cards would require
-    // 50 separate COUNT queries against the follows collection.
-    // With denormalized counters, it's one field on an already-fetched document.
+    // ── Social Graph Counters (Denormalized) ─────────────────────────────
     followerCount:  { type: Number, default: 0, min: 0 },
     followingCount: { type: Number, default: 0, min: 0 },
     recipeCount:    { type: Number, default: 0, min: 0 },
     postCount:      { type: Number, default: 0, min: 0 },
 
-    // ── Saved / Bookmarked Content ───────────────────────────────────────
-    // Stored as an array of ObjectIds — only loaded when the user visits
-    // their "Saved Recipes" page, not on every profile fetch.
+    // ── Saved Content ────────────────────────────────────────────────────
     savedRecipes: [{ type: Schema.Types.ObjectId, ref: 'Recipe' }],
 
-    // ── Account Settings & Role ──────────────────────────────────────────
-    // The 'role' field drives access control and UI differences.
-    // A 'professional_chef' gets a verified badge and the full portfolio UI.
-    // A 'home_cook' gets the simplified onboarding and memory-first UI.
+    // ── Account Settings ─────────────────────────────────────────────────
     role: {
       type:    String,
       enum:    ['home_cook', 'professional_chef', 'food_blogger', 'culinary_student', 'admin'],
       default: 'home_cook',
     },
-    isVerifiedChef: { type: Boolean, default: false }, // Admin-granted verification
-    isPrivate:      { type: Boolean, default: false }, // Private account — follow requests only
-    accountActive:  { type: Boolean, default: true  }, // Soft-delete / suspension flag
+    isVerifiedChef: { type: Boolean, default: false },
+    isPrivate:      { type: Boolean, default: false },
+    accountActive:  { type: Boolean, default: true  },
 
     // ── External Social Links ────────────────────────────────────────────
     socialLinks: {
@@ -181,31 +133,20 @@ const UserSchema = new Schema(
       tiktok:    { type: String, default: '', trim: true },
     },
 
-    // ── Password Reset ───────────────────────────────────────────────────
-    // These fields are ONLY populated during the password-reset flow.
-    // select: false ensures they never leak into regular profile fetches.
+    // ── Password Reset (never returned in normal queries) ────────────────
     passwordResetToken:   { type: String, select: false },
     passwordResetExpires: { type: Date,   select: false },
   },
-  {
-    // timestamps: true automatically adds `createdAt` and `updatedAt`
-    // fields that Mongoose manages for you.
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
 // ─────────────────────────────────────────────────────────────────────────
 // INDEXES
+// Note: email and username are NOT listed here because unique: true
+// in the field definition already creates those indexes automatically.
+// Adding them again here would cause the duplicate index warnings you saw.
 // ─────────────────────────────────────────────────────────────────────────
 
-// email and username are declared unique: true in the schema,
-// which automatically creates a unique index. We add these
-// for explicit documentation and to ensure Mongoose creates them.
-UserSchema.index({ email: 1 });
-UserSchema.index({ username: 1 });
-
-// Compound text index for the "Search Chefs" feature.
-// MongoDB text search supports "find chefs who know fermentation in Tokyo"
 UserSchema.index(
   {
     displayName:        'text',
@@ -215,8 +156,6 @@ UserSchema.index(
     bio:                'text',
   },
   {
-    // Weights determine relevance ranking in text search results.
-    // A match on displayName is worth 3x more than a match in bio.
     weights: {
       displayName:        10,
       culinaryTitle:       8,
@@ -228,74 +167,49 @@ UserSchema.index(
   }
 );
 
-// For the "Discover Chefs" leaderboard and sorting
 UserSchema.index({ followerCount: -1 });
 UserSchema.index({ role: 1, isVerifiedChef: 1, followerCount: -1 });
 UserSchema.index({ createdAt: -1 });
 
 // ─────────────────────────────────────────────────────────────────────────
-// MIDDLEWARE (Pre-save hooks)
+// PRE-SAVE HOOK
+// async function with NO `next` parameter — required for Mongoose 7+
+// Mongoose resolves the promise automatically; passing next causes the
+// "next is not a function" crash you saw earlier.
 // ─────────────────────────────────────────────────────────────────────────
 
-// Password hashing — runs before every .save() call
-// this.isModified('password') is CRITICAL.
-// Without it, the password would be re-hashed on EVERY save,
-// even for profile updates that don't touch the password.
-// bcrypt.hash with saltRounds=12 is the industry standard in 2025.
-UserSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next();
-
-  try {
-    const saltRounds = 12;
-    this.password = await bcrypt.hash(this.password, saltRounds);
-    next();
-  } catch (error) {
-    next(error);
-  }
+UserSchema.pre('save', async function () {
+  if (!this.isModified('password')) return;
+  this.password = await bcrypt.hash(this.password, 12);
 });
 
 // ─────────────────────────────────────────────────────────────────────────
 // INSTANCE METHODS
 // ─────────────────────────────────────────────────────────────────────────
 
-// comparePassword: used during login to verify a submitted password
-// against the stored hash. bcrypt.compare is timing-safe (resistant
-// to timing attacks that could reveal valid usernames).
 UserSchema.methods.comparePassword = async function (candidatePassword) {
-  // 'this.password' is the stored hash.
-  // This method is only callable on a document fetched with .select('+password')
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-// toJSON: strips sensitive fields before any JSON serialization.
-// This is the safety net — even if a controller accidentally
-// returns the full user object, the password never leaks.
 UserSchema.methods.toJSON = function () {
-  const userObject = this.toObject();
-  delete userObject.password;
-  delete userObject.passwordResetToken;
-  delete userObject.passwordResetExpires;
-  return userObject;
+  const obj = this.toObject();
+  delete obj.password;
+  delete obj.passwordResetToken;
+  delete obj.passwordResetExpires;
+  return obj;
 };
 
 // ─────────────────────────────────────────────────────────────────────────
 // STATIC METHODS
 // ─────────────────────────────────────────────────────────────────────────
 
-// findByCredentials: used by the login controller.
-// Returns the user with their password hash for comparison.
 UserSchema.statics.findByCredentials = async function (email, candidatePassword) {
-  // +password explicitly overrides select: false for this query only
   const user = await this.findOne({ email, accountActive: true }).select('+password');
 
-  if (!user) {
-    throw new Error('Invalid email or password');
-  }
+  if (!user) throw new Error('Invalid email or password');
 
   const isMatch = await user.comparePassword(candidatePassword);
-  if (!isMatch) {
-    throw new Error('Invalid email or password');
-  }
+  if (!isMatch) throw new Error('Invalid email or password');
 
   return user;
 };
