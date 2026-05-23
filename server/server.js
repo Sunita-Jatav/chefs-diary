@@ -9,6 +9,7 @@ import 'dotenv/config'; // Loads .env into process.env automatically
 import { connectDB } from './config/db.js';
 import authRoutes from './routes/auth.routes.js';
 import recipeRoutes from './routes/recipe.routes.js';
+import aiRoutes from './routes/ai.routes.js';
 
 const app  = express();
 const PORT = process.env.PORT || 5000;
@@ -103,6 +104,7 @@ app.get('/', (req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/recipes', recipeRoutes);
+app.use('/api/ai', aiRoutes);
 // ─────────────────────────────────────────────────────────────────
 // ERROR HANDLING MIDDLEWARE
 // These MUST be defined AFTER all routes.
