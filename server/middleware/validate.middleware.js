@@ -129,3 +129,82 @@ export const updateProfileValidation = [
 
   validate,
 ];
+
+// ─────────────────────────────────────────────────────────────────
+// recipeValidation
+// Rules for POST /api/recipes and PUT /api/recipes/:id
+// We only require the bare minimum — all emotional/cultural fields
+// are optional so chefs can save drafts and fill them in gradually.
+// ─────────────────────────────────────────────────────────────────
+export const recipeValidation = [
+  body('title')
+    .trim()
+    .notEmpty().withMessage('Recipe title is required.')
+    .isLength({ max: 150 }).withMessage('Title cannot exceed 150 characters.'),
+
+  body('description')
+    .optional()
+    .trim()
+    .isLength({ max: 600 }).withMessage('Description cannot exceed 600 characters.'),
+
+  body('ingredients')
+    .optional()
+    .isArray().withMessage('Ingredients must be an array.'),
+
+  body('ingredients.*.name')
+    .if(body('ingredients').exists())
+    .trim()
+    .notEmpty().withMessage('Each ingredient must have a name.'),
+
+  body('ingredients.*.quantity')
+    .if(body('ingredients').exists())
+    .trim()
+    .notEmpty().withMessage('Each ingredient must have a quantity.'),
+
+  body('steps')
+    .optional()
+    .isArray().withMessage('Steps must be an array.'),
+
+  body('steps.*.instruction')
+    .if(body('steps').exists())
+    .trim()
+    .notEmpty().withMessage('Each step must have an instruction.'),
+
+  body('steps.*.order')
+    .if(body('steps').exists())
+    .isInt({ min: 1 }).withMessage('Each step must have a valid order number.'),
+
+  body('difficulty')
+    .optional()
+    .isIn(['beginner', 'intermediate', 'advanced', 'professional'])
+    .withMessage('Invalid difficulty level.'),
+
+  body('status')
+    .optional()
+    .isIn(['draft', 'published', 'archived'])
+    .withMessage('Invalid status value.'),
+
+  body('visibility')
+    .optional()
+    .isIn(['public', 'connections_only', 'private'])
+    .withMessage('Invalid visibility value.'),
+
+  body('servings')
+    .optional()
+    .isInt({ min: 1 }).withMessage('Servings must be a positive number.'),
+
+  body('prepTime')
+    .optional()
+    .isInt({ min: 0 }).withMessage('Prep time must be a non-negative number.'),
+
+  body('cookTime')
+    .optional()
+    .isInt({ min: 0 }).withMessage('Cook time must be a non-negative number.'),
+
+  body('emotionalContext.mood')
+    .optional()
+    .isIn(['nostalgic', 'celebratory', 'comforting', 'adventurous', 'healing', 'romantic', 'spiritual', 'playful', ''])
+    .withMessage('Invalid mood value.'),
+
+  validate, // Always last
+];

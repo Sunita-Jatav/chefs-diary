@@ -128,8 +128,8 @@ export const getMe = async (req, res) => {
     // We re-fetch to get the absolute freshest data from the DB,
     // and to include extra fields the token payload doesn't have.
     const user = await User.findById(req.user._id)
-      .select('-password');
-      //.populate('savedRecipes', 'title slug coverImageUrl likeCount'); // Populate saves
+      .select('-password')
+      .populate('savedRecipes', 'title slug coverImageUrl likeCount'); // Populate saves
 
     if (!user) {
       return res.status(404).json({
