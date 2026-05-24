@@ -10,6 +10,8 @@ import { connectDB } from './config/db.js';
 import authRoutes from './routes/auth.routes.js';
 import recipeRoutes from './routes/recipe.routes.js';
 import aiRoutes from './routes/ai.routes.js';
+import followRoutes from './routes/follow.routes.js';
+import uploadRoutes from './routes/upload.routes.js';
 
 const app  = express();
 const PORT = process.env.PORT || 5000;
@@ -105,6 +107,12 @@ app.get('/', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/recipes', recipeRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/network', followRoutes); // Follow/unfollow and related endpoints
+app.use('/api/upload', uploadRoutes); // Upload endpoints
+
+
+
+
 // ─────────────────────────────────────────────────────────────────
 // ERROR HANDLING MIDDLEWARE
 // These MUST be defined AFTER all routes.

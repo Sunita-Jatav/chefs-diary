@@ -15,12 +15,17 @@ import { protect }                   from '../middleware/auth.middleware.js';
 import { registerValidation,
          loginValidation,
          updateProfileValidation }   from '../middleware/validate.middleware.js';
+import { register, login, getMe, updateProfile,
+         changePassword, getProfileByUsername } from '../controllers/auth.controller.js';
+
 
 const router = Router();
 
 // ── Public routes (no token required) ────────────────────────────
 router.post('/register', registerValidation, register);
 router.post('/login',    loginValidation,    login);
+router.get('/profile/:username', getProfileByUsername);
+
 
 // ── Protected routes (valid JWT required) ────────────────────────
 // The `protect` middleware runs first on each of these.
