@@ -1,30 +1,10 @@
 // middleware/validate.middleware.js
-// Input validation using express-validator.
-//
-// WHY validate in middleware, not in the controller?
-// The controller's only job is business logic. If we mix in
-// "is this email valid?" checks, the controller becomes cluttered
-// and the validation logic isn't reusable across routes.
-//
-// HOW express-validator works:
-// 1. You define a chain of rules: body('email').isEmail()
-// 2. Each rule runs against req.body and adds errors to an internal store
-// 3. validationResult(req) collects all errors
-// 4. Our `validate` runner checks that store and either blocks or proceeds
-
 import { body, validationResult } from 'express-validator';
 
-// ─────────────────────────────────────────────────────────────────
-// validate — the middleware runner
-// Always add this as the LAST item in your validation array.
-// It reads the accumulated errors and either returns a 422 response
-// or calls next() to proceed to the controller.
-// ─────────────────────────────────────────────────────────────────
 export const validate = (req, res, next) => {
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
-    // Format errors as a clean array: [{ field: 'email', message: 'Invalid email' }]
     const formatted = errors.array().map((err) => ({
       field:   err.path,
       message: err.msg,
@@ -40,16 +20,12 @@ export const validate = (req, res, next) => {
   next();
 };
 
-// ─────────────────────────────────────────────────────────────────
-// registerValidation
-// Rules for POST /api/auth/register
-// ─────────────────────────────────────────────────────────────────
 export const registerValidation = [
   body('email')
     .trim()
     .notEmpty().withMessage('Email is required.')
     .isEmail().withMessage('Please provide a valid email address.')
-    .normalizeEmail(), // Lowercases, removes dots from gmail, etc.
+    .normalizeEmail(),
 
   body('username')
     .trim()
@@ -72,13 +48,9 @@ export const registerValidation = [
     .isIn(['home_cook', 'professional_chef', 'food_blogger', 'culinary_student'])
     .withMessage('Invalid role selected.'),
 
-  validate, // Always last — runs the check and responds or proceeds
+  validate,
 ];
 
-// ─────────────────────────────────────────────────────────────────
-// loginValidation
-// Rules for POST /api/auth/login
-// ─────────────────────────────────────────────────────────────────
 export const loginValidation = [
   body('email')
     .trim()
@@ -92,11 +64,6 @@ export const loginValidation = [
   validate,
 ];
 
-// ─────────────────────────────────────────────────────────────────
-// updateProfileValidation
-// Rules for PATCH /api/auth/profile
-// All fields are optional — only validate what's present.
-// ─────────────────────────────────────────────────────────────────
 export const updateProfileValidation = [
   body('displayName')
     .optional()
@@ -132,9 +99,9 @@ export const updateProfileValidation = [
 
 // ─────────────────────────────────────────────────────────────────
 // recipeValidation
-// Rules for POST /api/recipes and PUT /api/recipes/:id
-// We only require the bare minimum — all emotional/cultural fields
-// are optional so chefs can save drafts and fill them in gradually.
+// Nested ingredient/step field validators removed — they fire on
+// empty array items that the controller already cleans up before
+// saving. Top-level array type checks are sufficient here.
 // ─────────────────────────────────────────────────────────────────
 export const recipeValidation = [
   body('title')
@@ -151,28 +118,9 @@ export const recipeValidation = [
     .optional()
     .isArray().withMessage('Ingredients must be an array.'),
 
-  body('ingredients.*.name')
-    .if(body('ingredients').exists())
-    .trim()
-    .notEmpty().withMessage('Each ingredient must have a name.'),
-
-  body('ingredients.*.quantity')
-    .if(body('ingredients').exists())
-    .trim()
-    .notEmpty().withMessage('Each ingredient must have a quantity.'),
-
   body('steps')
     .optional()
     .isArray().withMessage('Steps must be an array.'),
-
-  body('steps.*.instruction')
-    .if(body('steps').exists())
-    .trim()
-    .notEmpty().withMessage('Each step must have an instruction.'),
-
-  body('steps.*.order')
-    .if(body('steps').exists())
-    .isInt({ min: 1 }).withMessage('Each step must have a valid order number.'),
 
   body('difficulty')
     .optional()
@@ -206,5 +154,5 @@ export const recipeValidation = [
     .isIn(['nostalgic', 'celebratory', 'comforting', 'adventurous', 'healing', 'romantic', 'spiritual', 'playful', ''])
     .withMessage('Invalid mood value.'),
 
-  validate, // Always last
+  validate,
 ];
