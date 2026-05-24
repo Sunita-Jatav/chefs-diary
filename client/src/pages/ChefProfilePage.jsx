@@ -7,6 +7,7 @@ import { networkAPI }          from '../api/network.api';
 import { uploadAPI }           from '../api/upload.api';
 import { RecipeCard }          from '../components/recipe/RecipeCard';
 import useAuthStore            from '../store/authStore';
+import { SkillsSection }       from '../components/ui/SkillsSection';
 
 // ─── Skill category colors ────────────────────────────────────────
 const skillColors = {
@@ -50,7 +51,6 @@ const StatBox = ({ value, label, onClick }) => (
   </button>
 );
 
-// Portfolio timeline entry
 const PortfolioCard = ({ item }) => {
   const startYear = item.startDate ? new Date(item.startDate).getFullYear() : null;
   const endYear   = item.isCurrentRole ? 'Present' : (item.endDate ? new Date(item.endDate).getFullYear() : null);
@@ -61,7 +61,6 @@ const PortfolioCard = ({ item }) => {
       paddingBottom: '1.5rem',
       borderBottom: '1px solid rgba(44,31,14,0.08)',
     }}>
-      {/* Timeline dot */}
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
         <div style={{
           width: '0.75rem', height: '0.75rem', borderRadius: '50%',
@@ -72,7 +71,6 @@ const PortfolioCard = ({ item }) => {
         }} />
         <div style={{ width: '1px', flex: 1, background: 'rgba(44,31,14,0.1)', marginTop: '0.5rem' }} />
       </div>
-
       <div style={{ flex: 1, paddingBottom: '0.5rem' }}>
         <p style={{ fontWeight: 700, color: 'var(--color-ink)', fontSize: '0.95rem', margin: '0 0 0.125rem' }}>
           {item.role}
@@ -108,7 +106,6 @@ const PortfolioCard = ({ item }) => {
   );
 };
 
-// Follow list modal
 const FollowModal = ({ type, userId, onClose }) => {
   const [users,   setUsers]   = useState([]);
   const [loading, setLoading] = useState(true);
@@ -198,7 +195,7 @@ const FollowModal = ({ type, userId, onClose }) => {
 };
 
 // ─── MAIN PAGE ────────────────────────────────────────────────────
-export const ChefProfilePage = () => {
+export const ChefProfilePage = ({ toast }) => {
   const { username }               = useParams();
   const { user: currentUser, isAuthenticated, updateUser } = useAuthStore();
 
@@ -208,40 +205,35 @@ export const ChefProfilePage = () => {
   const [following,     setFollowing]     = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
   const [activeTab,     setActiveTab]     = useState('recipes');
-  const [followModal,   setFollowModal]   = useState(null); // 'followers' | 'following' | null
-  const [uploadingImg,  setUploadingImg]  = useState(null); // 'avatar' | 'cover' | null
+  const [followModal,   setFollowModal]   = useState(null);
+  const [uploadingImg,  setUploadingImg]  = useState(null);
 
   const isOwnProfile = currentUser?.username === username;
 
-  useEffect(() => {
-    loadProfile();
-  }, [username]);
+  useEffect(() => { loadProfile(); }, [username]);
 
   const loadProfile = async () => {
     setLoading(true);
     try {
-      // Fetch profile by username — use the auth getMe if own profile, else search by username
       const [userRes, recipesRes] = await Promise.all([
-        fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/auth/profile/${username}`).then(r => r.json()).catch(() => null),
+        fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/auth/profile/${username}`)
+          .then(r => r.json()).catch(() => null),
         recipeAPI.getByUser(username, { limit: 12 }),
       ]);
 
-      // Fallback: find user via recipe author data if dedicated endpoint not yet built
       if (userRes?.success) {
         setProfile(userRes.data.user);
       } else if (recipesRes.data.data.chef) {
-        // We get basic chef data from the recipes endpoint
         setProfile(recipesRes.data.data.chef);
       }
 
       setRecipes(recipesRes.data.data.recipes || []);
 
-      // Check follow status
       if (isAuthenticated && !isOwnProfile) {
         try {
           const followRes = await networkAPI.getFollowStatus(recipesRes.data.data.chef?._id);
           setFollowing(followRes.data.following);
-        } catch { /* not logged in or error */ }
+        } catch { }
       }
     } catch (error) {
       console.error('loadProfile error:', error);
@@ -256,16 +248,12 @@ export const ChefProfilePage = () => {
     try {
       const res = await networkAPI.toggleFollow(profile._id);
       setFollowing(res.data.following);
-      // Update local follower count on profile
       setProfile(prev => prev ? {
         ...prev,
         followerCount: prev.followerCount + (res.data.following ? 1 : -1),
       } : prev);
-    } catch {
-      // silently fail
-    } finally {
-      setFollowLoading(false);
-    }
+    } catch { }
+    finally { setFollowLoading(false); }
   };
 
   const handleImageUpload = async (type, file) => {
@@ -279,7 +267,7 @@ export const ChefProfilePage = () => {
           [type === 'avatar' ? 'avatarUrl' : 'coverImageUrl']: data.data.url,
         } : prev);
       }
-    } catch { /* handle silently */ }
+    } catch { }
     finally { setUploadingImg(null); }
   };
 
@@ -294,13 +282,12 @@ export const ChefProfilePage = () => {
     );
   }
 
-  // If we only have partial data from the recipes endpoint
   const displayProfile = profile || {};
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--color-parchment)' }}>
 
-      {/* ── Cover Image ───────────────────────────────────────────── */}
+      {/* Cover Image */}
       <div style={{
         height: '220px', position: 'relative', overflow: 'hidden',
         background: displayProfile.coverImageUrl
@@ -316,15 +303,13 @@ export const ChefProfilePage = () => {
             backdropFilter: 'blur(4px)', border: '1px solid rgba(255,255,255,0.2)',
           }}>
             {uploadingImg === 'cover' ? 'Uploading…' : '📷 Change Cover'}
-            <input
-              type="file" accept="image/*" style={{ display: 'none' }}
-              onChange={e => e.target.files[0] && handleImageUpload('cover', e.target.files[0])}
-            />
+            <input type="file" accept="image/*" style={{ display: 'none' }}
+              onChange={e => e.target.files[0] && handleImageUpload('cover', e.target.files[0])} />
           </label>
         )}
       </div>
 
-      {/* ── Profile Header ────────────────────────────────────────── */}
+      {/* Profile Header */}
       <div style={{ maxWidth: '900px', margin: '0 auto', padding: '0 1rem' }}>
         <div style={{
           display: 'flex', alignItems: 'flex-end', gap: '1.25rem',
@@ -339,13 +324,10 @@ export const ChefProfilePage = () => {
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               boxShadow: 'var(--shadow-warm)',
             }}>
-              {displayProfile.avatarUrl ? (
-                <img src={displayProfile.avatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              ) : (
-                <span style={{ color: 'white', fontWeight: 700, fontSize: '2.5rem' }}>
-                  {displayProfile.displayName?.[0] || '?'}
-                </span>
-              )}
+              {displayProfile.avatarUrl
+                ? <img src={displayProfile.avatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                : <span style={{ color: 'white', fontWeight: 700, fontSize: '2.5rem' }}>{displayProfile.displayName?.[0] || '?'}</span>
+              }
             </div>
             {isOwnProfile && (
               <label style={{
@@ -353,14 +335,11 @@ export const ChefProfilePage = () => {
                 width: '1.75rem', height: '1.75rem', borderRadius: '50%',
                 background: 'var(--color-terracotta)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer', border: '2px solid var(--color-parchment)',
-                fontSize: '0.7rem',
+                cursor: 'pointer', border: '2px solid var(--color-parchment)', fontSize: '0.7rem',
               }}>
                 {uploadingImg === 'avatar' ? '…' : '📷'}
-                <input
-                  type="file" accept="image/*" style={{ display: 'none' }}
-                  onChange={e => e.target.files[0] && handleImageUpload('avatar', e.target.files[0])}
-                />
+                <input type="file" accept="image/*" style={{ display: 'none' }}
+                  onChange={e => e.target.files[0] && handleImageUpload('avatar', e.target.files[0])} />
               </label>
             )}
           </div>
@@ -368,17 +347,13 @@ export const ChefProfilePage = () => {
           {/* Name + meta */}
           <div style={{ flex: 1, paddingBottom: '0.5rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-              <h1 style={{
-                fontFamily: 'var(--font-display)', fontSize: '1.75rem',
-                fontWeight: 700, color: 'var(--color-ink)', margin: 0,
-              }}>
+              <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.75rem', fontWeight: 700, color: 'var(--color-ink)', margin: 0 }}>
                 {displayProfile.displayName}
               </h1>
               {displayProfile.isVerifiedChef && (
                 <span style={{
                   background: 'var(--color-saffron)', color: 'var(--color-ink)',
-                  fontSize: '0.7rem', fontWeight: 700, padding: '0.15rem 0.5rem',
-                  borderRadius: '9999px',
+                  fontSize: '0.7rem', fontWeight: 700, padding: '0.15rem 0.5rem', borderRadius: '9999px',
                 }}>
                   ✓ Verified Chef
                 </span>
@@ -397,16 +372,12 @@ export const ChefProfilePage = () => {
           {/* Follow / Edit button */}
           <div style={{ paddingBottom: '0.5rem' }}>
             {isOwnProfile ? (
-              <Link
-                to="/settings/profile"
-                style={{
-                  padding: '0.625rem 1.5rem', borderRadius: '0.75rem',
-                  border: '1.5px solid rgba(44,31,14,0.2)',
-                  color: 'var(--color-ink)', textDecoration: 'none',
-                  fontSize: '0.875rem', fontWeight: 500, display: 'block',
-                  transition: 'all 0.2s',
-                }}
-              >
+              <Link to="/settings" style={{
+                padding: '0.625rem 1.5rem', borderRadius: '0.75rem',
+                border: '1.5px solid rgba(44,31,14,0.2)',
+                color: 'var(--color-ink)', textDecoration: 'none',
+                fontSize: '0.875rem', fontWeight: 500, display: 'block', transition: 'all 0.2s',
+              }}>
                 ✏️ Edit Profile
               </Link>
             ) : isAuthenticated ? (
@@ -414,12 +385,11 @@ export const ChefProfilePage = () => {
                 onClick={handleFollow}
                 disabled={followLoading}
                 style={{
-                  padding: '0.625rem 1.5rem', borderRadius: '0.75rem', border: 'none',
+                  padding: '0.625rem 1.5rem', borderRadius: '0.75rem',
                   background: following ? 'transparent' : 'var(--color-terracotta)',
                   border: following ? '1.5px solid rgba(44,31,14,0.2)' : 'none',
                   color: following ? 'var(--color-ink-muted)' : 'white',
-                  fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer',
-                  transition: 'all 0.2s',
+                  fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s',
                 }}
               >
                 {followLoading ? '…' : following ? 'Following' : '+ Follow'}
@@ -431,16 +401,8 @@ export const ChefProfilePage = () => {
         {/* Stats row */}
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
           <StatBox value={displayProfile.recipeCount || recipes.length} label="Recipes" />
-          <StatBox
-            value={displayProfile.followerCount || 0}
-            label="Followers"
-            onClick={() => setFollowModal('followers')}
-          />
-          <StatBox
-            value={displayProfile.followingCount || 0}
-            label="Following"
-            onClick={() => setFollowModal('following')}
-          />
+          <StatBox value={displayProfile.followerCount || 0} label="Followers" onClick={() => setFollowModal('followers')} />
+          <StatBox value={displayProfile.followingCount || 0} label="Following" onClick={() => setFollowModal('following')} />
         </div>
 
         {/* Bio / philosophy */}
@@ -475,11 +437,8 @@ export const ChefProfilePage = () => {
           </div>
         )}
 
-        {/* ── Tabs ─────────────────────────────────────────────────── */}
-        <div style={{
-          display: 'flex', gap: '0', borderBottom: '2px solid rgba(44,31,14,0.1)',
-          marginBottom: '1.5rem',
-        }}>
+        {/* Tabs */}
+        <div style={{ display: 'flex', gap: '0', borderBottom: '2px solid rgba(44,31,14,0.1)', marginBottom: '1.5rem' }}>
           {[
             { key: 'recipes',   label: `Recipes (${recipes.length})` },
             { key: 'skills',    label: 'Skills' },
@@ -500,8 +459,6 @@ export const ChefProfilePage = () => {
             </button>
           ))}
         </div>
-
-        {/* ── Tab content ─────────────────────────────────────────── */}
 
         {/* RECIPES TAB */}
         {activeTab === 'recipes' && (
@@ -525,9 +482,7 @@ export const ChefProfilePage = () => {
               </div>
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.25rem', paddingBottom: '3rem' }}>
-                {recipes.map(recipe => (
-                  <RecipeCard key={recipe._id} recipe={recipe} />
-                ))}
+                {recipes.map(recipe => <RecipeCard key={recipe._id} recipe={recipe} />)}
               </div>
             )}
           </div>
@@ -536,58 +491,10 @@ export const ChefProfilePage = () => {
         {/* SKILLS TAB */}
         {activeTab === 'skills' && (
           <div style={{ paddingBottom: '3rem' }}>
-            {!displayProfile.skills || displayProfile.skills.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '4rem 0' }}>
-                <p style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>🔪</p>
-                <p style={{ color: 'var(--color-ink-muted)' }}>No skills listed yet.</p>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                {displayProfile.skills.map(skill => {
-                  const colors = skillColors[skill.category] || skillColors.other;
-                  return (
-                    <div key={skill._id} style={{
-                      background: 'white', border: '1px solid rgba(44,31,14,0.1)',
-                      borderRadius: '0.75rem', padding: '1rem',
-                      display: 'flex', alignItems: 'center', gap: '1rem',
-                    }}>
-                      <span style={{
-                        padding: '0.25rem 0.625rem', borderRadius: '0.375rem',
-                        fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase',
-                        letterSpacing: '0.05em', background: colors.bg, color: colors.color,
-                        flexShrink: 0,
-                      }}>
-                        {skill.category}
-                      </span>
-                      <span style={{ flex: 1, fontWeight: 600, color: 'var(--color-ink)', fontSize: '0.95rem' }}>
-                        {skill.name}
-                      </span>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
-                        <span style={{ fontSize: '0.8rem', color: 'var(--color-ink-muted)' }}>
-                          👍 {skill.endorseCount}
-                        </span>
-                        {skill.endorseCount > 0 && (
-                          <div style={{ display: 'flex' }}>
-                            {skill.endorsedBy.slice(0, 3).map((e, i) => (
-                              <div key={i} style={{
-                                width: '1.5rem', height: '1.5rem', borderRadius: '50%',
-                                background: 'var(--color-terracotta)',
-                                border: '2px solid white',
-                                marginLeft: i > 0 ? '-0.4rem' : 0,
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                fontSize: '0.6rem', color: 'white', fontWeight: 700,
-                              }}>
-                                {e.user?.displayName?.[0] || '?'}
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+            <SkillsSection
+              profileUser={displayProfile}
+              toast={toast}
+            />
           </div>
         )}
 
@@ -601,16 +508,14 @@ export const ChefProfilePage = () => {
               </div>
             ) : (
               <div style={{ paddingLeft: '0.5rem' }}>
-                {displayProfile.portfolio.map((item, i) => (
-                  <PortfolioCard key={item._id || i} item={item} />
-                ))}
+                {displayProfile.portfolio.map((item, i) => <PortfolioCard key={item._id || i} item={item} />)}
               </div>
             )}
           </div>
         )}
       </div>
 
-      {/* Follow list modal */}
+      {/* Follow modal */}
       {followModal && (
         <FollowModal
           type={followModal}

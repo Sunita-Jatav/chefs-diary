@@ -6,6 +6,8 @@ import { recipeAPI }     from '../api/recipe.api';
 import { aiAPI }         from '../api/ai.api';
 import { useGroqStream } from '../hooks/useGroqStream';
 import useAuthStore      from '../store/authStore';
+import Comments from '../components/recipe/Comments';
+
 
 const moodEmoji = {
   nostalgic:    { emoji: '🌙', color: '#7c6fa0' },
@@ -673,6 +675,7 @@ export const RecipePage = ({ toast }) => {
         </div>
       </div>
 
+      <Comments recipeId={recipe._id} />
       {recipe && <CookingAssistant recipe={recipe} />}
     </div>
   );

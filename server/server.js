@@ -12,6 +12,10 @@ import recipeRoutes from './routes/recipe.routes.js';
 import aiRoutes from './routes/ai.routes.js';
 import followRoutes from './routes/follow.routes.js';
 import uploadRoutes from './routes/upload.routes.js';
+import commentRoutes from './routes/comments.js';
+import userRoutes from './routes/user.routes.js';
+import networkRoutes from './routes/network.routes.js';
+
 
 const app  = express();
 const PORT = process.env.PORT || 5000;
@@ -109,8 +113,9 @@ app.use('/api/recipes', recipeRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/network', followRoutes); // Follow/unfollow and related endpoints
 app.use('/api/upload', uploadRoutes); // Upload endpoints
-
-
+app.use('/api/recipes/:recipeId/comments', commentRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/network', networkRoutes);
 
 
 // ─────────────────────────────────────────────────────────────────

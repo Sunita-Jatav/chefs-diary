@@ -10,6 +10,11 @@ import { lazy, Suspense } from 'react';
 const RecipeEditorPage = lazy(() => import('./pages/RecipeEditorPage').then(m => ({ default: m.RecipeEditorPage })));
 const RecipePage       = lazy(() => import('./pages/RecipePage').then(m => ({ default: m.RecipePage })));
 const ChefProfilePage  = lazy(() => import('./pages/ChefProfilePage').then(m => ({ default: m.ChefProfilePage })));
+const SettingsPage = lazy(() => import('./pages/SettingsPage').then(m => ({ default: m.SettingsPage })));
+const NetworkFeedPage = lazy(() => import('./pages/NetworkFeedPage').then(m => ({ default: m.NetworkFeedPage })));
+const CreatePostPage  = lazy(() => import('./pages/CreatePostPage').then(m => ({ default: m.CreatePostPage })));
+
+
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center">
@@ -31,6 +36,9 @@ function App() {
             <Route path="/recipe/new"   element={<RecipeEditorPage toast={toast} />} />
             <Route path="/recipe/:slug" element={<RecipePage toast={toast} />} />
             <Route path="/@:username"   element={<ChefProfilePage />} />
+            <Route path="/settings" element={<SettingsPage toast={toast} />} />
+            <Route path="/network" element={<NetworkFeedPage toast={toast} />} />
+            <Route path="/network/create" element={<CreatePostPage toast={toast} />} />
             <Route path="*"             element={
               <div className="min-h-screen flex items-center justify-center text-center px-4">
                 <div>

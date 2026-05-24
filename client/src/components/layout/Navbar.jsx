@@ -3,6 +3,7 @@ import { useState }    from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import useAuthStore    from '../../store/authStore';
 import { AuthModal }   from '../ui/AuthModal';
+import { Settings } from 'lucide-react';
 
 export const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuthStore();
@@ -70,6 +71,14 @@ export const Navbar = () => {
                       className="block px-4 py-2 text-sm font-body text-ink hover:bg-parchment-100"
                     >
                       New Recipe
+                    </Link>
+                    <Link
+                      to="/settings"
+                      onClick={() => setMenuOpen(false)}
+                      className="block px-4 py-2 text-sm font-body text-ink hover:bg-parchment-100"
+                    >
+                      <Settings className="inline mr-2" />
+                      Settings
                     </Link>
                     <hr className="my-1 border-[var(--border)]" />
                     <button

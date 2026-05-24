@@ -9,8 +9,7 @@
 //   PATCH  = partial update (profile fields)
 
 import { Router }                    from 'express';
-import { register, login, getMe,
-         updateProfile, changePassword } from '../controllers/auth.controller.js';
+
 import { protect }                   from '../middleware/auth.middleware.js';
 import { registerValidation,
          loginValidation,
