@@ -6,7 +6,7 @@ import { recipeAPI }           from '../api/recipe.api';
 import { networkAPI }          from '../api/network.api';
 import { uploadAPI }           from '../api/upload.api';
 import { RecipeCard }          from '../components/recipe/RecipeCard';
-import UseAuthStore            from '../store/authStore';
+import UseAuthStore            from '../store/useAuthStore';
 import { SkillsSection }       from '../components/ui/SkillsSection';
 
 // ─── Skill category colors ────────────────────────────────────────
@@ -197,7 +197,7 @@ const FollowModal = ({ type, userId, onClose }) => {
 // ─── MAIN PAGE ────────────────────────────────────────────────────
 export const ChefProfilePage = ({ toast }) => {
   const { username }               = useParams();
-  const { user: currentUser, isAuthenticated, updateUser } = useAuthStore();
+  const { user: currentUser, isAuthenticated, updateUser } = UseAuthStore();
 
   const [profile,       setProfile]       = useState(null);
   const [recipes,       setRecipes]       = useState([]);

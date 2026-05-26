@@ -1,7 +1,7 @@
 // client/src/components/ui/SkillsSection.jsx
 import { useState } from 'react';
 import { Plus, X, ThumbsUp } from 'lucide-react';
-import api from '../../lib/axios';
+import api from '../../api/axiosInstance';
 import UseAuthStore from '../../store/useAuthStore';
 
 const CATEGORIES = ['technique', 'cuisine', 'dietary', 'equipment', 'management', 'other'];
