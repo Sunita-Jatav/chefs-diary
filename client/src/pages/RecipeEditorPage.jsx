@@ -13,7 +13,7 @@ import { useNavigate }   from 'react-router-dom';
 import { recipeAPI }     from '../api/recipe.api';
 import { aiAPI }         from '../api/ai.api';
 import { useGroqStream } from '../hooks/useGroqStream';
-import UseAuthStore      from '../store/useauthStore';
+import UseAuthStore      from '../store/useAuthStore';
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 const MOODS = [
