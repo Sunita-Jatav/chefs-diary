@@ -16,7 +16,7 @@ const moodEmoji = {
 };
 
 export const RecipeCard = ({ recipe, onLikeToggle }) => {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated } = UseAuthStore();
   const [liked,     setLiked]     = useState(false);
   const [likeCount, setLikeCount] = useState(recipe.likeCount || 0);
 

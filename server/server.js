@@ -116,6 +116,7 @@ app.use('/api/upload', uploadRoutes); // Upload endpoints
 app.use('/api/recipes/:recipeId/comments', commentRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/network', networkRoutes);
+app.use('/api/search', require('./routes/search'));
 
 
 // ─────────────────────────────────────────────────────────────────

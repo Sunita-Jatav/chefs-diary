@@ -1,6 +1,6 @@
 // client/src/store/networkStore.js
 import { create } from 'zustand';
-import api from '../lib/axios'; // your existing axios instance
+import api from '../api/axiosInstance'; // your existing axios instance
 
 const useNetworkStore = create((set, get) => ({
   posts: [],

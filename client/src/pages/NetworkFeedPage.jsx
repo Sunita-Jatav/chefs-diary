@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, Trash2, Briefcase, Users, MessageCircle, Star, Lightbulb, BookOpen, ChefHat } from 'lucide-react';
 import useNetworkStore from '../store/networkStore';
-import UseAuthStore from '../store/authStore';
+import UseAuthStore from '../store/useAuthStore';
 
 const FILTERS = [
   { key: 'all',    label: 'All' },
@@ -31,7 +31,7 @@ const CTA_LABEL = {
 
 export const NetworkFeedPage = ({ toast }) => {
   const { posts, hasMore, loading, filter, setFilter, fetchPosts, deletePost, toggleLike } = useNetworkStore();
-  const { user } = useAuthStore();
+  const { user } = UseAuthStore();
 
   useEffect(() => {
     fetchPosts(true);
