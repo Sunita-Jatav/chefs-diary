@@ -7,6 +7,7 @@ import { aiAPI }         from '../api/ai.api';
 import { useGroqStream } from '../hooks/useGroqStream';
 import useAuthStore      from '../store/authStore';
 import Comments from '../components/recipe/Comments';
+import { VoiceStepNav } from '../components/ui/VoiceStepNav';
 
 
 const moodEmoji = {
@@ -45,9 +46,9 @@ const SectionDivider = ({ title }) => (
 );
 
 // ─── Cooking Assistant ────────────────────────────────────────────
-const CookingAssistant = ({ recipe }) => {
+// FIX: accepts chatInput + setChatInput props so VoiceStepNav dictation writes into this input
+const CookingAssistant = ({ recipe, chatInput, setChatInput }) => {
   const [isOpen,   setIsOpen]   = useState(false);
-  const [input,    setInput]    = useState('');
   const [messages, setMessages] = useState([{
     role: 'assistant',
     content: `Hi! I'm Sous, your cooking companion for "${recipe.title}". Ask me anything about this recipe — timing, techniques, substitutions.`,
@@ -60,19 +61,14 @@ const CookingAssistant = ({ recipe }) => {
   }, [messages, streamedText]);
 
   const sendMessage = async () => {
-    if (!input.trim() || isStreaming) return;
+    if (!chatInput.trim() || isStreaming) return;
 
-    const userMessage    = { role: 'user', content: input.trim() };
+    const userMessage    = { role: 'user', content: chatInput.trim() };
     const updatedHistory = [...messages, userMessage];
     setMessages(updatedHistory);
-    setInput('');
+    setChatInput('');
     reset();
 
-    // ── FIX: startStream returns the accumulated text directly ──
-    // We cannot rely on the `streamedText` state here because React
-    // state updates are asynchronous — by the time we read streamedText
-    // after await, it still holds the previous render's stale value.
-    // The hook now accumulates in a local variable and returns it.
     const finalResponse = await startStream(() =>
       aiAPI.streamAssistant({
         conversationHistory: updatedHistory.map(m => ({
@@ -91,7 +87,6 @@ const CookingAssistant = ({ recipe }) => {
       })
     );
 
-    // Use the returned string — NOT streamedText state
     if (finalResponse) {
       setMessages(prev => [
         ...prev,
@@ -204,14 +199,14 @@ const CookingAssistant = ({ recipe }) => {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
+      {/* Input — uses lifted chatInput state */}
       <div style={{
         padding: '0.75rem', borderTop: '1px solid rgba(44,31,14,0.1)',
         display: 'flex', gap: '0.5rem',
       }}>
         <input
-          value={input}
-          onChange={e => setInput(e.target.value)}
+          value={chatInput}
+          onChange={e => setChatInput(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Ask anything about this recipe…"
           disabled={isStreaming}
@@ -223,13 +218,13 @@ const CookingAssistant = ({ recipe }) => {
         />
         <button
           onClick={sendMessage}
-          disabled={isStreaming || !input.trim()}
+          disabled={isStreaming || !chatInput.trim()}
           style={{
             width: '2.5rem', height: '2.5rem', borderRadius: '0.625rem',
             border: 'none',
-            background: isStreaming || !input.trim() ? 'rgba(44,31,14,0.1)' : 'var(--color-terracotta)',
+            background: isStreaming || !chatInput.trim() ? 'rgba(44,31,14,0.1)' : 'var(--color-terracotta)',
             color: 'white',
-            cursor: isStreaming || !input.trim() ? 'not-allowed' : 'pointer',
+            cursor: isStreaming || !chatInput.trim() ? 'not-allowed' : 'pointer',
             fontSize: '1rem', display: 'flex', alignItems: 'center',
             justifyContent: 'center', flexShrink: 0, transition: 'all 0.2s',
           }}
@@ -252,10 +247,11 @@ export const RecipePage = ({ toast }) => {
   const [liked,          setLiked]          = useState(false);
   const [likeCount,      setLikeCount]      = useState(0);
   const [saved,          setSaved]          = useState(false);
-  const [activeStep,     setActiveStep]     = useState(null);
+  const [activeStep,     setActiveStep]     = useState(0);      // FIX: single declaration, starts at 0
   const [substitution,   setSubstitution]   = useState(null);
   const [subLoading,     setSubLoading]     = useState(false);
   const [subRestriction, setSubRestriction] = useState('vegan');
+  const [chatInput,      setChatInput]      = useState('');     // FIX: lifted here, passed to CookingAssistant
 
   useEffect(() => { fetchRecipe(); }, [slug]);
 
@@ -296,7 +292,6 @@ export const RecipePage = ({ toast }) => {
     } catch { toast?.error('Failed to save recipe.'); }
   };
 
-  // ── FIX: removed stale recipeAPI.getBySlug call — recipe already in state
   const handleSubstitution = async () => {
     if (!isAuthenticated) { toast?.error('Sign in to use AI features.'); return; }
     setSubLoading(true);
@@ -611,11 +606,20 @@ export const RecipePage = ({ toast }) => {
         {/* Steps */}
         <SectionDivider title="Method" />
 
+        {/* FIX: VoiceStepNav wired to lifted chatInput state via onDictate */}
+        <VoiceStepNav
+          steps={recipe.steps?.map(s => s.instruction) ?? []}
+          currentStep={activeStep}
+          onStepChange={setActiveStep}
+          onDictate={(text) => setChatInput(prev => (prev ? prev + ' ' : '') + text)}
+          toast={toast}
+        />
+
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem' }}>
           {recipe.steps?.map((step, i) => (
             <div
               key={i}
-              onClick={() => setActiveStep(activeStep === i ? null : i)}
+              onClick={() => setActiveStep(activeStep === i ? 0 : i)}
               style={{
                 background: 'white', border: '1px solid',
                 borderColor: activeStep === i ? 'var(--color-terracotta)' : 'rgba(44,31,14,0.1)',
@@ -676,7 +680,15 @@ export const RecipePage = ({ toast }) => {
       </div>
 
       <Comments recipeId={recipe._id} />
-      {recipe && <CookingAssistant recipe={recipe} />}
+
+      {/* FIX: chatInput + setChatInput passed as props so voice dictation writes into Sous chat */}
+      {recipe && (
+        <CookingAssistant
+          recipe={recipe}
+          chatInput={chatInput}
+          setChatInput={setChatInput}
+        />
+      )}
     </div>
   );
 };

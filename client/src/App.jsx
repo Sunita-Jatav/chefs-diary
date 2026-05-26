@@ -4,6 +4,8 @@ import { Navbar }    from './components/layout/Navbar';
 import { HomePage }  from './pages/HomePage';
 import { useToast }  from './hooks/useToast';
 import { ToastContainer } from './components/ui/Toast';
+import { VoiceFAB } from './components/ui/VoiceFAB';
+import './components/ui/VoiceFAB.css';
 
 // Lazy-load heavier pages to keep the initial bundle small
 import { lazy, Suspense } from 'react';
@@ -39,6 +41,10 @@ function App() {
             <Route path="/settings" element={<SettingsPage toast={toast} />} />
             <Route path="/network" element={<NetworkFeedPage toast={toast} />} />
             <Route path="/network/create" element={<CreatePostPage toast={toast} />} />
+            <Route path="/network"        element={<PrivateRoute><Suspense fallback={<div>Loading...</div>}><NetworkFeedPage toast={toast} /></Suspense></PrivateRoute>} />
+            <Route path="/network/create" element={<PrivateRoute><Suspense fallback={<div>Loading...</div>}><CreatePostPage  toast={toast} /></Suspense></PrivateRoute>} />
+            <Route path="/settings"       element={<PrivateRoute><Suspense fallback={<div>Loading...</div>}><SettingsPage    toast={toast} /></Suspense></PrivateRoute>} />
+
             <Route path="*"             element={
               <div className="min-h-screen flex items-center justify-center text-center px-4">
                 <div>
@@ -51,6 +57,7 @@ function App() {
         </Suspense>
 
         <ToastContainer toasts={toasts} />
+        <VoiceFAB toast={toast} />
       </div>
     </BrowserRouter>
   );
