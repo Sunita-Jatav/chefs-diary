@@ -1,5 +1,5 @@
 // src/api/upload.api.js
-import UseAuthStore from '../store/authStore';
+import UseAuthStore from '../store/useAuthStore';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
