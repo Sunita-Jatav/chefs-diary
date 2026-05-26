@@ -13,7 +13,7 @@ import { useNavigate }   from 'react-router-dom';
 import { recipeAPI }     from '../api/recipe.api';
 import { aiAPI }         from '../api/ai.api';
 import { useGroqStream } from '../hooks/useGroqStream';
-import useAuthStore      from '../store/authStore';
+import UseAuthStore      from '../store/useauthStore';
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 const MOODS = [
@@ -872,7 +872,7 @@ const Step4Story = ({ form, update, updateNested }) => {
 
 // ─── MAIN PAGE COMPONENT ─────────────────────────────────────────────────────
 export const RecipeEditorPage = ({ toast }) => {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated } = UseAuthStore();
   const navigate = useNavigate();
 
   const [currentStep,    setCurrentStep]    = useState(0);

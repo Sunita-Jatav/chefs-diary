@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Plus, X, ThumbsUp } from 'lucide-react';
 import api from '../../lib/axios';
-import useAuthStore from '../../store/authStore';
+import UseAuthStore from '../../store/authStore';
 
 const CATEGORIES = ['technique', 'cuisine', 'dietary', 'equipment', 'management', 'other'];
 

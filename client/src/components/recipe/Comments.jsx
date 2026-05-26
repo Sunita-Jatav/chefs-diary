@@ -1,12 +1,12 @@
 // components/Comments.jsx
 import { useEffect, useState } from 'react';
-import { useCommentStore } from '../store/useCommentStore';
-import { useAuthStore } from '../store/authStore';
+import  useCommentStore  from '../../store/useCommentStore';
+import UseAuthStore  from '../../store/useAuthStore';
 import { formatDistanceToNow } from 'date-fns';
 
 export default function Comments({ recipeId }) {
   const { comments, loading, fetchComments, addComment, deleteComment } = useCommentStore();
-  const { user } = useAuthStore();
+  const { user } = UseAuthStore();
   const [text, setText] = useState('');
   const [replyTo, setReplyTo] = useState(null); // { id, username }
   const [submitting, setSubmitting] = useState(false);

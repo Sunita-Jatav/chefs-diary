@@ -6,7 +6,7 @@ import { recipeAPI }           from '../api/recipe.api';
 import { networkAPI }          from '../api/network.api';
 import { uploadAPI }           from '../api/upload.api';
 import { RecipeCard }          from '../components/recipe/RecipeCard';
-import useAuthStore            from '../store/authStore';
+import UseAuthStore            from '../store/authStore';
 import { SkillsSection }       from '../components/ui/SkillsSection';
 
 // ─── Skill category colors ────────────────────────────────────────

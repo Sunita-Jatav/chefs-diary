@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, Trash2, Briefcase, Users, MessageCircle, Star, Lightbulb, BookOpen, ChefHat } from 'lucide-react';
 import useNetworkStore from '../store/networkStore';
-import useAuthStore from '../store/authStore';
+import UseAuthStore from '../store/authStore';
 
 const FILTERS = [
   { key: 'all',    label: 'All' },

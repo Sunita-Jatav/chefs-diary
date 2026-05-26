@@ -5,7 +5,7 @@ import { useParams, Link } from 'react-router-dom';
 import { recipeAPI }     from '../api/recipe.api';
 import { aiAPI }         from '../api/ai.api';
 import { useGroqStream } from '../hooks/useGroqStream';
-import useAuthStore      from '../store/authStore';
+import UseAuthStore      from '../store/useAuthStore';
 import Comments from '../components/recipe/Comments';
 import { VoiceStepNav } from '../components/ui/VoiceStepNav';
 
@@ -239,7 +239,7 @@ const CookingAssistant = ({ recipe, chatInput, setChatInput }) => {
 // ─── MAIN PAGE ────────────────────────────────────────────────────
 export const RecipePage = ({ toast }) => {
   const { slug } = useParams();
-  const { user, isAuthenticated } = useAuthStore();
+  const { user, isAuthenticated } = UseAuthStore();
 
   const [recipe,         setRecipe]         = useState(null);
   const [loading,        setLoading]        = useState(true);
@@ -677,10 +677,16 @@ export const RecipePage = ({ toast }) => {
             ← Back to Discover
           </Link>
         </div>
+
+        {/* Two-column: steps summary + comments */}
+        <div style={{ marginTop: '3rem', display: 'grid', gridTemplateColumns: '1fr 380px', gap: '2rem', alignItems: 'start' }}>
+          <div /> {/* left column intentionally empty — steps are already above */}
+          <div style={{ position: 'sticky', top: '5rem' }}>
+            <Comments recipeId={recipe._id} />
+          </div>
+        </div>
+
       </div>
-
-      <Comments recipeId={recipe._id} />
-
       {/* FIX: chatInput + setChatInput passed as props so voice dictation writes into Sous chat */}
       {recipe && (
         <CookingAssistant

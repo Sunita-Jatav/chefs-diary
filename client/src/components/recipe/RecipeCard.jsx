@@ -2,7 +2,7 @@
 import { Link }    from 'react-router-dom';
 import { useState }from 'react';
 import { recipeAPI } from '../../api/recipe.api';
-import useAuthStore from '../../store/authStore';
+import UseAuthStore from '../../store/useAuthStore';
 
 const moodEmoji = {
   nostalgic:    '🌙',

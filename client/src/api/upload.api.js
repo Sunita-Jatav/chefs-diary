@@ -1,12 +1,12 @@
 // src/api/upload.api.js
-import useAuthStore from '../store/authStore';
+import UseAuthStore from '../store/authStore';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 // We use fetch with FormData instead of axios because
 // axios requires extra config for multipart/form-data.
 const uploadFile = async (endpoint, file) => {
-  const token   = useAuthStore.getState().token;
+  const token   = UseAuthStore.getState().token;
   const formData = new FormData();
   formData.append('image', file);
 

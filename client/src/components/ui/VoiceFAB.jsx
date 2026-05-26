@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { useVoice } from '../../hooks/useVoice';
-import { useAuthStore } from '../../store/authStore';
+import  UseAuthStore  from '../../store/useAuthStore';
 import { Mic, MicOff, X } from 'lucide-react';
 
 export function VoiceFAB({ toast }) {
-  const { user } = useAuthStore();
+  const { user } = UseAuthStore();
   const [transcript, setTranscript] = useState('');
   const [showBubble, setShowBubble] = useState(false);
 

@@ -38,14 +38,10 @@ function App() {
             <Route path="/recipe/new"   element={<RecipeEditorPage toast={toast} />} />
             <Route path="/recipe/:slug" element={<RecipePage toast={toast} />} />
             <Route path="/@:username"   element={<ChefProfilePage />} />
-            <Route path="/settings" element={<SettingsPage toast={toast} />} />
-            <Route path="/network" element={<NetworkFeedPage toast={toast} />} />
+            <Route path="/settings"     element={<SettingsPage toast={toast} />} />
+            <Route path="/network"      element={<NetworkFeedPage toast={toast} />} />
             <Route path="/network/create" element={<CreatePostPage toast={toast} />} />
-            <Route path="/network"        element={<PrivateRoute><Suspense fallback={<div>Loading...</div>}><NetworkFeedPage toast={toast} /></Suspense></PrivateRoute>} />
-            <Route path="/network/create" element={<PrivateRoute><Suspense fallback={<div>Loading...</div>}><CreatePostPage  toast={toast} /></Suspense></PrivateRoute>} />
-            <Route path="/settings"       element={<PrivateRoute><Suspense fallback={<div>Loading...</div>}><SettingsPage    toast={toast} /></Suspense></PrivateRoute>} />
-
-            <Route path="*"             element={
+            <Route path="*" element={
               <div className="min-h-screen flex items-center justify-center text-center px-4">
                 <div>
                   <p className="font-display text-6xl mb-4">404</p>

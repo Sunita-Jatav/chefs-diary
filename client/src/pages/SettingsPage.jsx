@@ -1,7 +1,7 @@
 // src/pages/SettingsPage.jsx
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import useAuthStore from '../store/useAuthStore';
+import UseAuthStore from '../store/useAuthStore';
 import { SkillsSection } from '../components/ui/SkillsSection';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000';

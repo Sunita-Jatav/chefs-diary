@@ -6,10 +6,11 @@
 // the specific slice of state they care about changes.
 // For auth state read by 50+ components, this is a meaningful performance win.
 
+
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-const useAuthStore = create(
+const UseAuthStore = create(
   // persist middleware saves the store to localStorage automatically.
   // On page refresh, the user stays logged in without an extra API call.
   persist(
@@ -67,4 +68,4 @@ const useAuthStore = create(
   )
 );
 
-export default useAuthStore;
+export default UseAuthStore ;

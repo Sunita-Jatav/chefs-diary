@@ -2,7 +2,7 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import Post from '../models/Post.js';
-import { protect } from '../middleware/auth.js';
+import { protect } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
 

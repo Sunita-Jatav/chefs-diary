@@ -4,7 +4,7 @@
 // The interceptors run automatically on every request/response.
 
 import axios from 'axios';
-import useAuthStore from '../store/authStore';
+import UseAuthStore from '../store/useAuthStore';
 
 const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000',
@@ -17,7 +17,7 @@ const axiosInstance = axios.create({
 // Without this, every API call would need to manually add the header.
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = useAuthStore.getState().token;
+    const token = UseAuthStore.getState().token;
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }

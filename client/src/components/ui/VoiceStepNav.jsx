@@ -1,10 +1,10 @@
-import { useEffect } from 'react';
+import { useEffect,useState } from 'react';
 import { Mic, MicOff, Volume2, VolumeX } from 'lucide-react';
 import { useVoice } from '../../hooks/useVoice';
-import { useAuthStore } from '../../store/authStore';
+import UseAuthStore  from '../../store/useAuthStore';
 
 export function VoiceStepNav({ steps, currentStep, onStepChange, onDictate, toast }) {
-  const { user } = useAuthStore();
+  const { user } = UseAuthStore();
   const [speaking, setSpeaking] = useState(false);
 
   const { listening, supported, startListening, stopListening, speak, stopSpeaking } = useVoice({

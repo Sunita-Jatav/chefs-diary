@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { recipeAPI }    from '../api/recipe.api';
 import { RecipeCard }   from '../components/recipe/RecipeCard';
-import useAuthStore     from '../store/authStore';
+import UseAuthStore     from '../store/useAuthStore';
 
 const MOODS = ['', 'nostalgic', 'celebratory', 'comforting', 'adventurous', 'healing'];
 const SORTS = [
@@ -20,7 +20,7 @@ export const HomePage = () => {
   const [sort,     setSort]     = useState('latest');
   const [page,     setPage]     = useState(1);
   const [pagination, setPagination] = useState(null);
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated } = UseAuthStore();
 
   const fetchRecipes = async () => {
     setLoading(true);

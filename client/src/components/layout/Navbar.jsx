@@ -1,12 +1,12 @@
 // src/components/layout/Navbar.jsx
 import { useState }    from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import useAuthStore    from '../../store/authStore';
+import UseAuthStore    from '../../store/useAuthStore';
 import { AuthModal }   from '../ui/AuthModal';
 import { Settings } from 'lucide-react';
 
 export const Navbar = () => {
-  const { user, isAuthenticated, logout } = useAuthStore();
+  const { user, isAuthenticated, logout } = UseAuthStore();
   const [showAuth,   setShowAuth]   = useState(false);
   const [menuOpen,   setMenuOpen]   = useState(false);
   const navigate = useNavigate();
