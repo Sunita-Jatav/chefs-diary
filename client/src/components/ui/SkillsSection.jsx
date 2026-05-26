@@ -16,7 +16,7 @@ const CATEGORY_COLORS = {
 };
 
 export const SkillsSection = ({ profileUser, onSkillsChange, toast }) => {
-  const { user: currentUser } = useAuthStore();
+  const { user: currentUser } = UseAuthStore();
   const isOwner = currentUser?._id === profileUser?._id;
 
   const [skills, setSkills]     = useState(profileUser?.skills || []);
