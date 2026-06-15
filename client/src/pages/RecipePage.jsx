@@ -8,7 +8,10 @@ import { useGroqStream } from '../hooks/useGroqStream';
 import UseAuthStore      from '../store/useAuthStore';
 import Comments from '../components/recipe/Comments';
 import { VoiceStepNav } from '../components/ui/VoiceStepNav';
+import { Helmet } from 'react-helmet-async';
+import { Share } from 'lucide-react';
 import { TranslationModule } from '../components/ui/TranslationModule';
+import { ShareModal } from '../components/ui/ShareModal';
 
 
 const moodEmoji = {
@@ -255,6 +258,7 @@ export const RecipePage = ({ toast }) => {
   const [subLoading,     setSubLoading]     = useState(false);
   const [subRestriction, setSubRestriction] = useState('vegan');
   const [translatedRecipe, setTranslatedRecipe] = useState(null);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   useEffect(() => { fetchRecipe(); }, [slug]);
 
@@ -306,6 +310,26 @@ export const RecipePage = ({ toast }) => {
     } catch { toast?.error('Failed to submit rating.'); }
   };
 
+  const handleShare = async () => {
+    const shareData = {
+      title: `${displayRecipe.title} | Chef's Diary`,
+      text: `Check out this amazing recipe for ${displayRecipe.title}!`,
+      url: window.location.href
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          setIsShareModalOpen(true);
+        }
+      }
+    } else {
+      setIsShareModalOpen(true);
+    }
+  };
+
   const handleSubstitution = async () => {
     if (!isAuthenticated) { toast?.error('Sign in to use AI features.'); return; }
     setSubLoading(true);
@@ -354,6 +378,15 @@ export const RecipePage = ({ toast }) => {
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--color-parchment)' }}>
+      <Helmet>
+        <title>{displayRecipe.title} | Chef's Diary</title>
+        <meta property="og:title" content={displayRecipe.title} />
+        <meta property="og:description" content={displayRecipe.emotionalContext?.story?.slice(0, 150) || 'Check out this amazing recipe!'} />
+        {displayRecipe.coverImageUrl && <meta property="og:image" content={displayRecipe.coverImageUrl} />}
+        <meta property="og:url" content={window.location.href} />
+        <meta property="og:type" content="article" />
+        <meta name="twitter:card" content="summary_large_image" />
+      </Helmet>
 
       {/* Hero */}
       <div style={{
@@ -462,6 +495,16 @@ export const RecipePage = ({ toast }) => {
             cursor: 'pointer', fontSize: '0.875rem', fontWeight: 500, transition: 'all 0.2s',
           }}>
             {saved ? 'Saved' : 'Save'}
+          </button>
+          
+          <button onClick={handleShare} style={{
+            display: 'flex', alignItems: 'center', gap: '0.4rem',
+            padding: '0.5rem 1rem', borderRadius: '0.625rem', border: '1px solid',
+            borderColor: 'rgba(44,31,14,0.15)', background: 'transparent',
+            color: 'var(--color-ink-muted)', cursor: 'pointer', fontSize: '0.875rem', 
+            fontWeight: 500, transition: 'all 0.2s',
+          }}>
+            <Share size={16} /> Share
           </button>
           
           <div style={{ width: '1px', height: '1.5rem', background: 'rgba(44,31,14,0.1)', margin: '0 0.25rem' }} />
@@ -744,6 +787,12 @@ export const RecipePage = ({ toast }) => {
       {recipe && (
         <CookingAssistant recipe={recipe} />
       )}
+      <ShareModal 
+        isOpen={isShareModalOpen} 
+        onClose={() => setIsShareModalOpen(false)} 
+        url={window.location.href}
+        title={displayRecipe.title}
+      />
     </div>
   );
 };
