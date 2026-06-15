@@ -306,6 +306,17 @@ followers[], following[]
 
 ---
 
+## 🌍 Real-World Applications
+
+Chef's Diary goes beyond simple recipe sharing. It is designed to serve multiple domains:
+- **Cultural Heritage Preservation:** A digital archive for family recipes, regional dishes, and oral traditions that might otherwise be lost.
+- **Culinary Education:** An interactive learning resource for students to explore global cuisines, cooking techniques, and food history.
+- **Home Cooking Assistance:** Simplifies daily cooking with hands-free voice navigation, AI ingredient substitutions, and real-time guidance.
+- **Food Blogging & Community Building:** Empowers creators to share their culinary journey, grow their audience, and build meaningful emotional connections with a global community.
+- **Tourism & Cultural Promotion:** A platform for regional organizations to showcase local cuisines and support cultural tourism.
+
+---
+
 ## 🔮 Future Scope (P3 Roadmap)
 
 | Feature | Status |
@@ -314,10 +325,18 @@ followers[], following[]
 | Rating System (1–5 stars) | ✅ Done |
 | Social Share + OG Meta Tags | ✅ Done |
 | Recipe Collections (saved lists) | ✅ Done |
-| Push Notifications | 📋 Planned |
-| Print-Friendly View (CSS) | 📋 Planned |
-| PWA / Offline Mode | 📋 Planned |
 | Multilingual Recipe Translation | ✅ Done |
+| Mobile Application Development (React Native / Flutter) | 📋 Planned |
+| Advanced Recommendation System (ML-based) | 📋 Planned |
+| Nutrition Analysis (Calorie, Protein, Carbs tracking) | 📋 Planned |
+| Computer Vision Integration (Ingredient recognition) | 📋 Planned |
+| Augmented Reality Cooking Assistant | 📋 Planned |
+| Smart Kitchen Integration (IoT devices) | 📋 Planned |
+| Enhanced Cultural Archive (Videos & historical records) | 📋 Planned |
+| Blockchain-Based Recipe Ownership | 📋 Planned |
+| Push Notifications | 📋 Planned |
+| PWA / Offline Mode | 📋 Planned |
+| Print-Friendly View (CSS) | 📋 Planned |
 
 ---
 
