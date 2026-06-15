@@ -3,13 +3,13 @@
 
 import { useState } from 'react';
 import { authAPI }  from '../../api/auth.api';
-import useAuthStore from '../../store/useAuthStore';
+import UseAuthStore from '../../store/useAuthStore';
 
 export const AuthModal = ({ onClose }) => {
   const [tab,     setTab]     = useState('login'); // 'login' | 'register'
   const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState('');
-  const login = useAuthStore(s => s.login);
+  const login = UseAuthStore(s => s.login);
 
   const [form, setForm] = useState({
     email: '', password: '', username: '', displayName: '', role: 'home_cook',

@@ -197,7 +197,9 @@ const FollowModal = ({ type, userId, onClose }) => {
 
 // ─── MAIN PAGE ────────────────────────────────────────────────────
 export const ChefProfilePage = ({ toast }) => {
-  const { username }               = useParams();
+  const { username: paramUsername } = useParams();
+  // Strip the '@' prefix if present for database/API queries
+  const username = paramUsername?.startsWith('@') ? paramUsername.slice(1) : paramUsername;
   const { user: currentUser, isAuthenticated, updateUser } = UseAuthStore();
 
   const [profile,       setProfile]       = useState(null);
@@ -278,6 +280,18 @@ export const ChefProfilePage = ({ toast }) => {
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>👨‍🍳</div>
           <p style={{ color: 'var(--color-ink-muted)' }}>Loading profile…</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!loading && !profile) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🍽️</div>
+          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', color: 'var(--color-ink)', marginBottom: '0.5rem' }}>Chef Not Found</h2>
+          <p style={{ color: 'var(--color-ink-muted)' }}>We couldn't find a chef with this username.</p>
         </div>
       </div>
     );

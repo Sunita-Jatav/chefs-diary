@@ -35,15 +35,21 @@ export function VoiceStepNav({ steps, currentStep, onStepChange }) {
 
   return (
     <div style={{
-      background: 'rgba(44,31,14,0.03)',
-      border: '1px dashed rgba(44,31,14,0.2)',
-      borderRadius: '0.75rem',
+      position: 'sticky',
+      top: '5rem',
+      zIndex: 40,
+      background: listening ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.8)',
+      backdropFilter: 'blur(12px)',
+      border: `1px solid ${listening ? 'rgba(193,97,79,0.4)' : 'rgba(44,31,14,0.15)'}`,
+      boxShadow: listening ? '0 12px 40px rgba(193,97,79,0.15)' : '0 4px 20px rgba(44,31,14,0.05)',
+      borderRadius: '1rem',
       padding: '1rem',
-      marginBottom: '1.5rem',
+      marginBottom: '2rem',
       display: 'flex',
       alignItems: 'center',
       gap: '1rem',
-      justifyContent: 'space-between'
+      justifyContent: 'space-between',
+      transition: 'all 0.3s ease'
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
         <div style={{

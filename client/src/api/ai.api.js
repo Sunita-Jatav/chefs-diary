@@ -4,7 +4,7 @@
 // The non-streaming endpoints (prompts, substitutions) use axios normally.
 
 import api from './axiosInstance';
-import useAuthStore from '../store/useAuthStore';
+import UseAuthStore from '../store/useAuthStore';
 
 export const aiAPI = {
   // Non-streaming — use axios
@@ -15,7 +15,7 @@ export const aiAPI = {
   // Streaming — use fetch() with SSE
   // These return a Response object; the caller uses a ReadableStream to consume tokens
   streamStory: async (data) => {
-    const token = useAuthStore.getState().token;
+    const token = UseAuthStore.getState().token;
     return fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/ai/story/stream`, {
       method:  'POST',
       headers: {
@@ -27,7 +27,7 @@ export const aiAPI = {
   },
 
   streamAssistant: async (data) => {
-    const token = useAuthStore.getState().token;
+    const token = UseAuthStore.getState().token;
     return fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/ai/assistant/stream`, {
       method:  'POST',
       headers: {

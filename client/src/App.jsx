@@ -37,7 +37,7 @@ function App() {
             <Route path="/"             element={<HomePage />} />
             <Route path="/recipe/new"   element={<RecipeEditorPage toast={toast} />} />
             <Route path="/recipe/:slug" element={<RecipePage toast={toast} />} />
-            <Route path="/@:username"   element={<ChefProfilePage />} />
+            <Route path="/:username"    element={<ChefProfilePage />} />
             <Route path="/settings"     element={<SettingsPage toast={toast} />} />
             <Route path="/network"      element={<NetworkFeedPage toast={toast} />} />
             <Route path="/network/create" element={<CreatePostPage toast={toast} />} />
