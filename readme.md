@@ -326,7 +326,7 @@ Chef's Diary goes beyond simple recipe sharing. It is designed to serve multiple
 | Social Share + OG Meta Tags | ✅ Done |
 | Recipe Collections (saved lists) | ✅ Done |
 | Multilingual Recipe Translation | ✅ Done |
-| Mobile Application Development (React Native / Flutter) | 📋 Planned |
+| Mobile Application Development (React Native / Flutter) | ✅ Done |
 | Advanced Recommendation System (ML-based) | 📋 Planned |
 | Nutrition Analysis (Calorie, Protein, Carbs tracking) | 📋 Planned |
 | Computer Vision Integration (Ingredient recognition) | 📋 Planned |

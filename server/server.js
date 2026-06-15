@@ -17,6 +17,7 @@ import userRoutes from './routes/user.routes.js';
 import networkRoutes from './routes/network.routes.js';
 import searchRoutes from './routes/search.js';
 import collectionRoutes from './routes/collection.routes.js';
+import recommendationRoutes from './routes/recommendation.routes.js';
 
 
 const app  = express();
@@ -121,6 +122,7 @@ app.use('/api/upload',   uploadRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/api/network',  networkRoutes);
 app.use('/api/search',   searchRoutes);
+app.use('/api/recommendations', recommendationRoutes);
 
 
 // ─────────────────────────────────────────────────────────────────

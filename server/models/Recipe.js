@@ -127,6 +127,7 @@ const RecipeSchema = new Schema(
     // ── AI Metadata ───────────────────────────────────────────────────────
     aiGeneratedStory:    { type: Boolean, default: false },
     aiSubstitutionCache: { type: Map, of: String, default: () => new Map() },
+    embedding:           { type: [Number], default: [] },
 
     // ── Status & Visibility ───────────────────────────────────────────────
     status: {

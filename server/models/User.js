@@ -115,6 +115,9 @@ const UserSchema = new Schema(
     // ── Saved Content ────────────────────────────────────────────────────
     savedRecipes: [{ type: Schema.Types.ObjectId, ref: 'Recipe' }],
 
+    // ── AI Recommendation Vector ─────────────────────────────────────────
+    preferenceVector: { type: [Number], default: [] },
+
     // ── Account Settings ─────────────────────────────────────────────────
     role: {
       type:    String,

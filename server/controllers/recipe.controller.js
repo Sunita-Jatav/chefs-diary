@@ -15,12 +15,59 @@
 
 import Recipe from '../models/Recipe.js';
 import User   from '../models/User.js';
+import EmbeddingService from '../services/embedding.service.js';
 
 // ─────────────────────────────────────────────────────────────────
 // HELPER — buildRecipeFilter
 // Constructs the MongoDB query filter for the public feed.
 // Extracted as a helper so the logic is reusable and testable.
 // ─────────────────────────────────────────────────────────────────
+const generateRecipeEmbeddingAsync = async (recipe) => {
+  try {
+    const textToEmbed = [
+      recipe.title,
+      recipe.description,
+      recipe.cuisineType?.join(' '),
+      recipe.dietaryTags?.join(' '),
+      recipe.emotionalContext?.mood,
+      recipe.emotionalContext?.culturalOrigin,
+      recipe.ingredients?.map(i => i.name).join(' ')
+    ].filter(Boolean).join('. ');
+    
+    const embedding = await EmbeddingService.generateEmbedding(textToEmbed);
+    if (embedding && embedding.length > 0) {
+      await Recipe.findByIdAndUpdate(recipe._id, { embedding });
+    }
+  } catch (err) {
+    console.error('Failed to generate embedding:', err);
+  }
+};
+
+const updateUserPreferenceVectorAsync = async (userId) => {
+  try {
+    const user = await User.findById(userId).populate('savedRecipes', 'embedding');
+    const likedRecipes = await Recipe.find({ likes: userId }).select('embedding');
+    
+    let allEmbeddings = [];
+    user.savedRecipes?.forEach(r => { if (r.embedding && r.embedding.length) allEmbeddings.push(r.embedding); });
+    likedRecipes?.forEach(r => { if (r.embedding && r.embedding.length) allEmbeddings.push(r.embedding); });
+    
+    if (allEmbeddings.length > 0) {
+      const vectorLength = allEmbeddings[0].length;
+      let sumVector = new Array(vectorLength).fill(0);
+      for (const emb of allEmbeddings) {
+        for (let i = 0; i < vectorLength; i++) {
+          sumVector[i] += emb[i];
+        }
+      }
+      const avgVector = sumVector.map(val => val / allEmbeddings.length);
+      await User.findByIdAndUpdate(userId, { preferenceVector: avgVector });
+    }
+  } catch (err) {
+    console.error('Failed to update user preference vector:', err);
+  }
+};
+
 const buildRecipeFilter = (query) => {
   const filter = { status: 'published', visibility: 'public' };
 
@@ -111,6 +158,9 @@ export const createRecipe = async (req, res) => {
     // Populate the author field so the response includes profile info
     // instead of just the raw ObjectId
     await recipe.populate('author', 'username displayName avatarUrl culinaryTitle');
+
+    // Trigger async generation of vector embedding for ML recommendations
+    generateRecipeEmbeddingAsync(recipe);
 
     return res.status(201).json({
       success: true,
@@ -413,6 +463,9 @@ export const updateRecipe = async (req, res) => {
     await recipe.save();
     await recipe.populate('author', 'username displayName avatarUrl culinaryTitle');
 
+    // Trigger async generation of vector embedding for ML recommendations
+    generateRecipeEmbeddingAsync(recipe);
+
     return res.status(200).json({
       success: true,
       message: 'Recipe updated successfully.',
@@ -502,6 +555,8 @@ export const toggleLike = async (req, res) => {
         $inc:  { likeCount: -1 },
       });
 
+      updateUserPreferenceVectorAsync(userId);
+
       return res.status(200).json({
         success: true,
         message: 'Recipe unliked.',
@@ -514,6 +569,8 @@ export const toggleLike = async (req, res) => {
         $addToSet: { likes: userId }, // $addToSet prevents duplicates
         $inc:      { likeCount: 1 },
       });
+
+      updateUserPreferenceVectorAsync(userId);
 
       return res.status(200).json({
         success: true,
@@ -553,6 +610,8 @@ export const toggleSave = async (req, res) => {
         Recipe.findByIdAndUpdate(recipeId, { $inc: { saveCount: -1 } }),
       ]);
 
+      updateUserPreferenceVectorAsync(userId);
+
       return res.status(200).json({
         success: true,
         message: 'Recipe removed from saved.',
@@ -565,6 +624,8 @@ export const toggleSave = async (req, res) => {
         User.findByIdAndUpdate(userId,   { $addToSet: { savedRecipes: recipeId } }),
         Recipe.findByIdAndUpdate(recipeId, { $inc: { saveCount: 1 } }),
       ]);
+
+      updateUserPreferenceVectorAsync(userId);
 
       return res.status(200).json({
         success: true,
