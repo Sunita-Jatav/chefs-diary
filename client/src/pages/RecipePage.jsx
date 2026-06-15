@@ -12,6 +12,7 @@ import { Helmet } from 'react-helmet-async';
 import { Share } from 'lucide-react';
 import { TranslationModule } from '../components/ui/TranslationModule';
 import { ShareModal } from '../components/ui/ShareModal';
+import { SaveModal } from '../components/ui/SaveModal';
 
 
 const moodEmoji = {
@@ -252,6 +253,7 @@ export const RecipePage = ({ toast }) => {
   const [liked,          setLiked]          = useState(false);
   const [likeCount,      setLikeCount]      = useState(0);
   const [saved,          setSaved]          = useState(false);
+  const [isSaveModalOpen,setIsSaveModalOpen] = useState(false);
   const [userRating,     setUserRating]     = useState(0);
   const [activeStep,     setActiveStep]     = useState(0);      // FIX: single declaration, starts at 0
   const [substitution,   setSubstitution]   = useState(null);
@@ -291,13 +293,9 @@ export const RecipePage = ({ toast }) => {
     } catch { toast?.error('Failed to update like.'); }
   };
 
-  const handleSave = async () => {
+  const handleSave = () => {
     if (!isAuthenticated) { toast?.error('Sign in to save recipes.'); return; }
-    try {
-      const res = await recipeAPI.toggleSave(recipe._id);
-      setSaved(res.data.data.saved);
-      toast?.success(res.data.data.saved ? 'Saved to your collection!' : 'Removed from saved.');
-    } catch { toast?.error('Failed to save recipe.'); }
+    setIsSaveModalOpen(true);
   };
 
   const handleRate = async (rating) => {
@@ -792,6 +790,12 @@ export const RecipePage = ({ toast }) => {
         onClose={() => setIsShareModalOpen(false)} 
         url={window.location.href}
         title={displayRecipe.title}
+      />
+      <SaveModal
+        isOpen={isSaveModalOpen}
+        onClose={() => setIsSaveModalOpen(false)}
+        recipeId={recipe._id}
+        toast={toast}
       />
     </div>
   );

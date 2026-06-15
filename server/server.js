@@ -16,6 +16,7 @@ import commentRoutes from './routes/comments.js';
 import userRoutes from './routes/user.routes.js';
 import networkRoutes from './routes/network.routes.js';
 import searchRoutes from './routes/search.js';
+import collectionRoutes from './routes/collection.routes.js';
 
 
 const app  = express();
@@ -109,15 +110,17 @@ app.get('/', (req, res) => {
   });
 });
 
-app.use('/api/auth', authRoutes);
-app.use('/api/recipes', recipeRoutes);
-app.use('/api/ai', aiRoutes);
-app.use('/api/network', followRoutes); // Follow/unfollow and related endpoints
-app.use('/api/upload', uploadRoutes); // Upload endpoints
-app.use('/api/recipes/:recipeId/comments', commentRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/network', networkRoutes);
-app.use('/api/search', searchRoutes);
+// ── Mount Routes ─────────────────────────────────────────────────────────
+app.use('/api/auth',     authRoutes);
+app.use('/api/users',    userRoutes);
+app.use('/api/recipes',  recipeRoutes);
+app.use('/api/collections', collectionRoutes);
+app.use('/api/ai',       aiRoutes);
+app.use('/api/follow',   followRoutes);
+app.use('/api/upload',   uploadRoutes);
+app.use('/api/comments', commentRoutes);
+app.use('/api/network',  networkRoutes);
+app.use('/api/search',   searchRoutes);
 
 
 // ─────────────────────────────────────────────────────────────────

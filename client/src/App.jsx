@@ -15,6 +15,8 @@ const ChefProfilePage  = lazy(() => import('./pages/ChefProfilePage').then(m => 
 const SettingsPage = lazy(() => import('./pages/SettingsPage').then(m => ({ default: m.SettingsPage })));
 const NetworkFeedPage = lazy(() => import('./pages/NetworkFeedPage').then(m => ({ default: m.NetworkFeedPage })));
 const CreatePostPage  = lazy(() => import('./pages/CreatePostPage').then(m => ({ default: m.CreatePostPage })));
+const CollectionsPage = lazy(() => import('./pages/CollectionsPage').then(m => ({ default: m.CollectionsPage })));
+const CollectionDetailPage = lazy(() => import('./pages/CollectionDetailPage').then(m => ({ default: m.CollectionDetailPage })));
 
 
 
@@ -41,6 +43,8 @@ function App() {
             <Route path="/settings"     element={<SettingsPage toast={toast} />} />
             <Route path="/network"      element={<NetworkFeedPage toast={toast} />} />
             <Route path="/network/create" element={<CreatePostPage toast={toast} />} />
+            <Route path="/collections"  element={<CollectionsPage />} />
+            <Route path="/collections/:id" element={<CollectionDetailPage />} />
             <Route path="*" element={
               <div className="min-h-screen flex items-center justify-center text-center px-4">
                 <div>

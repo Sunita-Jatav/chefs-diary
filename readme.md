@@ -310,10 +310,10 @@ followers[], following[]
 
 | Feature | Status |
 |---|---|
-| Search & Filters | 🚧 In Progress |
-| Rating System (1–5 stars) | 📋 Planned |
-| Social Share + OG Meta Tags | 📋 Planned |
-| Recipe Collections (saved lists) | 📋 Planned |
+| Search & Filters | ✅ Done |
+| Rating System (1–5 stars) | ✅ Done |
+| Social Share + OG Meta Tags | ✅ Done |
+| Recipe Collections (saved lists) | ✅ Done |
 | Push Notifications | 📋 Planned |
 | Print-Friendly View (CSS) | 📋 Planned |
 | PWA / Offline Mode | 📋 Planned |
