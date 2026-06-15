@@ -16,6 +16,7 @@
 - **Ingredient Substitution Engine** — AI suggests smart swaps based on dietary needs or availability (JSON mode)
 - **Sous Chef Chat Assistant** — A floating AI cooking companion on every recipe page, answering questions mid-cook
 - **AI Story Prompts** — Guided prompts help users articulate the cultural and emotional meaning behind their dish
+- **Multilingual Translation Module** — Instantly translates entire recipes (title, desc, ingredients, steps) into 6+ languages using AI JSON parsing.
 
 ### 📖 Emotional & Cultural Storytelling
 - Every recipe includes an **Emotional Context** layer: mood, cultural origin, occasion, season, and a personal story
@@ -28,16 +29,16 @@
 - **Voice Commands** — Navigate the entire app hands-free:
   - `"go home"` / `"open network"` / `"go to profile"` / `"open settings"`
   - `"next step"` / `"previous step"` / `"repeat"` / `"read step"` on recipe pages
-  - Any other phrase → dictated directly into Sous Chef chat
-- **VoiceStepNav** — Per-recipe voice control for step-by-step cooking navigation with TTS readback
+- **VoiceStepNav** — Sticky, hands-free voice control panel for step-by-step cooking navigation with Text-to-Speech readback
 - Built entirely on the native **Web Speech API** — no external dependency
 
 ### 👨‍🍳 Chef Profiles
 - Custom **cover photo** and **avatar** upload via Cloudinary
+- **User Dashboard & Activity Feed** — Keep track of your recent recipe interactions, new followers, and network updates
 - **Skills & Endorsements** — Add culinary skills, get endorsed by other chefs
 - **Portfolio & Recipes tabs** — Showcase work and published recipes
 - **Follow / Unfollow** — Build your culinary network with follower/following modals
-- **Public profile** via `/chef/:username`
+- **Public profile** via `/:username` (Vanity URLs)
 
 ### 🌐 Chef Network Feed
 - Post updates, job listings, and collaboration requests
@@ -239,9 +240,10 @@ Frontend runs on `localhost:5500`, backend on `localhost:5000`.
 ### Groq AI
 | Method | Endpoint | Description |
 |---|---|---|
-| POST | `/api/groq/story` | Stream story generation (SSE) |
-| POST | `/api/groq/substitute` | Ingredient substitutions (JSON) |
-| POST | `/api/groq/sous` | Sous Chef chat (streaming) |
+| POST | `/api/ai/story/stream` | Stream story generation (SSE) |
+| POST | `/api/ai/substitutions` | Ingredient substitutions (JSON) |
+| POST | `/api/ai/assistant/stream` | Sous Chef chat (streaming) |
+| POST | `/api/ai/translate` | Translate recipe in-place |
 
 ### Search
 | Method | Endpoint | Description |
@@ -315,17 +317,17 @@ followers[], following[]
 | Push Notifications | 📋 Planned |
 | Print-Friendly View (CSS) | 📋 Planned |
 | PWA / Offline Mode | 📋 Planned |
-| Multilingual Recipe Translation | 📋 Planned |
+| Multilingual Recipe Translation | ✅ Done |
 
 ---
 
 ## 🏗️ Architecture Notes
 
-- **Auth store:** `authStore.js` exports `UseAuthStore` (capital U) as default — all imports must match exactly
+- **Auth store:** `useAuthStore.js` exports `UseAuthStore` (capital U) as default — all imports must match exactly
 - **Axios instance:** `src/api/axiosInstance.js` — all API calls use `/api/...` prefix
 - **Comments layout:** Right-side sticky column on `RecipePage` via 2-column CSS grid
 - **Groq streaming:** Uses SSE (`text/event-stream`) for story generation; JSON mode for substitutions
-- **Voice dictation:** Unrecognized voice commands route directly into Sous Chef chat input via lifted state in `RecipePage`
+- **Voice Assistant Separation:** Voice navigation is decoupled from Sous Chef chat for cleaner UX.
 
 ---
 
