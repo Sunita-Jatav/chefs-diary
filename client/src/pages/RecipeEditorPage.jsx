@@ -14,6 +14,7 @@ import { recipeAPI }     from '../api/recipe.api';
 import { aiAPI }         from '../api/ai.api';
 import { useGroqStream } from '../hooks/useGroqStream';
 import UseAuthStore      from '../store/useAuthStore';
+import { ImageUpload }   from '../components/ui/ImageUpload';
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 const MOODS = [
@@ -41,6 +42,7 @@ const STEPS = ['Basics', 'Ingredients', 'Steps', 'Story & AI'];
 // ─── Empty form template ────────────────────────────────────────────────────
 const emptyForm = {
   title:       '',
+  coverImageUrl: '',
   description: '',
   cuisineType: [],
   dietaryTags: [],
@@ -50,7 +52,7 @@ const emptyForm = {
   cookTime:    '',
   restTime:    '',
   ingredients: [{ name: '', quantity: '', unit: '', notes: '', isOptional: false }],
-  steps:       [{ order: 1, instruction: '', duration: '', tips: '' }],
+  steps:       [{ order: 1, instruction: '', duration: '', tips: '', mediaUrl: '' }],
   emotionalContext: {
     story:          '',
     mood:           '',
@@ -166,6 +168,16 @@ const Step1Basics = ({ form, update }) => {
         title="The Recipe"
         subtitle="Start with the essentials — what is this dish?"
       />
+
+      <Field label="Cover Photo" hint="Show off the final dish! Landscape images work best.">
+        <ImageUpload
+          currentUrl={form.coverImageUrl}
+          uploadType="recipeImage"
+          onUploadSuccess={(url) => update('coverImageUrl', url)}
+          aspectLabel="Landscape (3:2)"
+          placeholder="📸"
+        />
+      </Field>
 
       <Field label="Recipe Title" required>
         <input
@@ -398,7 +410,7 @@ const Step3Steps = ({ form, update }) => {
   const addStep = () => {
     update('steps', [
       ...form.steps,
-      { order: form.steps.length + 1, instruction: '', duration: '', tips: '' },
+      { order: form.steps.length + 1, instruction: '', duration: '', tips: '', mediaUrl: '' },
     ]);
   };
 
@@ -495,6 +507,16 @@ const Step3Steps = ({ form, update }) => {
                 value={step.tips}
                 onChange={e => updateStep(i, 'tips', e.target.value)}
                 style={{ padding: '0.5rem 0.75rem', fontSize: '0.8rem' }}
+              />
+            </div>
+
+            <div style={{ marginTop: '0.75rem' }}>
+              <ImageUpload
+                currentUrl={step.mediaUrl}
+                uploadType="recipeImage"
+                onUploadSuccess={(url) => updateStep(i, 'mediaUrl', url)}
+                aspectLabel="Step photo (optional)"
+                placeholder="📸"
               />
             </div>
           </div>
