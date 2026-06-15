@@ -1,4 +1,4 @@
-import { api } from './axios.config';
+import api from './axiosInstance';
 
 export const collectionAPI = {
   create: (data) => api.post('/api/collections', data),

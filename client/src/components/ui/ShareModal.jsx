@@ -1,4 +1,4 @@
-import { X, Copy, Twitter, Facebook, MessageCircle } from 'lucide-react';
+import { X, Copy, MessageCircle, Share2 } from 'lucide-react';
 import { useState } from 'react';
 
 export const ShareModal = ({ isOpen, onClose, url, title }) => {
@@ -44,7 +44,7 @@ export const ShareModal = ({ isOpen, onClose, url, title }) => {
             className="flex flex-col items-center gap-2 text-ink-muted hover:text-ink transition-colors"
           >
             <div className="w-12 h-12 rounded-full bg-[#1DA1F2]/10 flex items-center justify-center text-[#1DA1F2]">
-              <Twitter size={24} />
+              <Share2 size={24} />
             </div>
             <span className="text-xs font-medium">Twitter</span>
           </a>
@@ -56,7 +56,7 @@ export const ShareModal = ({ isOpen, onClose, url, title }) => {
             className="flex flex-col items-center gap-2 text-ink-muted hover:text-ink transition-colors"
           >
             <div className="w-12 h-12 rounded-full bg-[#1877F2]/10 flex items-center justify-center text-[#1877F2]">
-              <Facebook size={24} />
+              <Share2 size={24} />
             </div>
             <span className="text-xs font-medium">Facebook</span>
           </a>
