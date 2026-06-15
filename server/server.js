@@ -15,6 +15,7 @@ import uploadRoutes from './routes/upload.routes.js';
 import commentRoutes from './routes/comments.js';
 import userRoutes from './routes/user.routes.js';
 import networkRoutes from './routes/network.routes.js';
+import searchRoutes from './routes/search.js';
 
 
 const app  = express();
@@ -116,7 +117,7 @@ app.use('/api/upload', uploadRoutes); // Upload endpoints
 app.use('/api/recipes/:recipeId/comments', commentRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/network', networkRoutes);
-app.use('/api/search', require('./routes/search'));
+app.use('/api/search', searchRoutes);
 
 
 // ─────────────────────────────────────────────────────────────────

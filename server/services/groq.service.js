@@ -255,3 +255,45 @@ ${dedication?.dedicatedTo ? `Dedicated to: ${dedication.dedicatedTo}` : ''}`,
 
   return JSON.parse(completion.choices[0].message.content);
 };
+
+// ─────────────────────────────────────────────────────────────────
+// translateRecipe
+// Translates the recipe title, description, ingredients, and steps.
+// Uses json_object response format to return a structured translated recipe.
+// ─────────────────────────────────────────────────────────────────
+export const translateRecipe = async (recipe, targetLanguage) => {
+  const recipeData = {
+    title: recipe.title,
+    description: recipe.description,
+    ingredients: recipe.ingredients?.map(i => `${i.quantity} ${i.unit || ''} ${i.name} ${i.notes ? `(${i.notes})` : ''}`.trim()),
+    steps: recipe.steps?.map(s => s.instruction)
+  };
+
+  const completion = await groqClient.chat.completions.create({
+    model:       MODEL_FAST,
+    max_tokens:  1500,
+    temperature: 0.2, // Low temp for accurate translation
+    response_format: { type: 'json_object' },
+    messages: [
+      {
+        role: 'system',
+        content: `You are a professional culinary translator. Translate the provided recipe into ${targetLanguage}.
+Maintain all culinary terminology accurately in the target language.
+
+Return ONLY a valid JSON object with the exact following structure. No markdown fences.
+{
+  "title": "translated title",
+  "description": "translated description",
+  "ingredients": ["translated ingredient 1", "translated ingredient 2"],
+  "steps": ["translated step 1", "translated step 2"]
+}`
+      },
+      {
+        role: 'user',
+        content: JSON.stringify(recipeData, null, 2)
+      }
+    ]
+  });
+
+  return JSON.parse(completion.choices[0].message.content);
+};

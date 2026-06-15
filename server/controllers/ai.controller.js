@@ -23,6 +23,7 @@ import {
   getIngredientSubstitutions,
   streamCookingAssistant,
   generateStoryPrompts,
+  translateRecipe as translateRecipeService,
 } from '../services/groq.service.js';
 import Recipe from '../models/Recipe.js';
 
@@ -263,6 +264,36 @@ export const getStoryPrompts = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Failed to generate prompts. Please try again.',
+    });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────
+// @route   POST /api/ai/translate
+// @access  Protected
+// Translates a recipe to the target language.
+// ─────────────────────────────────────────────────────────────────
+export const translateRecipe = async (req, res) => {
+  const { recipe, targetLanguage } = req.body;
+
+  if (!recipe || !targetLanguage) {
+    return res.status(400).json({
+      success: false,
+      message: 'Recipe object and targetLanguage are required.',
+    });
+  }
+
+  try {
+    const result = await translateRecipeService(recipe, targetLanguage);
+    return res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    console.error('translateRecipe error:', error.message);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to translate recipe. Please try again.',
     });
   }
 };

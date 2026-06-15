@@ -8,6 +8,7 @@ import { uploadAPI }           from '../api/upload.api';
 import { RecipeCard }          from '../components/recipe/RecipeCard';
 import UseAuthStore            from '../store/useAuthStore';
 import { SkillsSection }       from '../components/ui/SkillsSection';
+import { ActivityTab }         from '../components/profile/ActivityTab';
 
 // ─── Skill category colors ────────────────────────────────────────
 const skillColors = {
@@ -441,6 +442,7 @@ export const ChefProfilePage = ({ toast }) => {
         <div style={{ display: 'flex', gap: '0', borderBottom: '2px solid rgba(44,31,14,0.1)', marginBottom: '1.5rem' }}>
           {[
             { key: 'recipes',   label: `Recipes (${recipes.length})` },
+            { key: 'activity',  label: 'Activity' },
             { key: 'skills',    label: 'Skills' },
             { key: 'portfolio', label: 'Portfolio' },
           ].map(tab => (
@@ -486,6 +488,11 @@ export const ChefProfilePage = ({ toast }) => {
               </div>
             )}
           </div>
+        )}
+
+        {/* ACTIVITY TAB */}
+        {activeTab === 'activity' && (
+          <ActivityTab profileUser={displayProfile} />
         )}
 
         {/* SKILLS TAB */}

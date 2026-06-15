@@ -19,10 +19,13 @@ const TYPE_MAP = {
 // Query: type=all|post|job|collab  page=1
 router.get('/feed', protect, async (req, res) => {
   try {
-    const { type = 'all', page = 1 } = req.query;
+    const { type = 'all', page = 1, authorId } = req.query;
     const skip = (Number(page) - 1) * PAGE_SIZE;
 
     const filter = { status: 'published' };
+    if (authorId) {
+      filter.author = authorId;
+    }
 
     if (type !== 'all') {
       const types = TYPE_MAP[type];

@@ -3,7 +3,9 @@ import express from 'express';
 import bcrypt from 'bcryptjs';
 import { protect } from '../middleware/auth.middleware.js';
 import User from '../models/User.js';
-
+import Recipe from '../models/Recipe.js';
+import Post from '../models/Post.js';
+import Comment from '../models/Comment.js';
 const router = express.Router();
 
 // GET /api/users/me — get current user profile
@@ -71,6 +73,65 @@ router.get('/:username', async (req, res) => {
     res.json({ success: true, data: user });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// GET /api/users/:username/activity — public activity
+router.get('/:username/activity', async (req, res) => {
+  try {
+    const user = await User.findOne({ username: req.params.username });
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    // Fetch recent likes (recipes and posts) and comments
+    const [likedRecipes, likedPosts, comments] = await Promise.all([
+      Recipe.find({ likes: user._id, status: 'published', visibility: 'public' })
+        .sort({ updatedAt: -1 }).limit(5).select('title slug coverImageUrl likeCount'),
+      Post.find({ likes: user._id, status: 'published', visibility: 'public' })
+        .sort({ updatedAt: -1 }).limit(5).populate('author', 'displayName username avatarUrl'),
+      Comment.find({ author: user._id, isDeleted: false })
+        .sort({ createdAt: -1 }).limit(5).populate('targetId', 'title slug content')
+    ]);
+
+    res.json({ likedRecipes, likedPosts, comments });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// GET /api/users/:username/stats — private stats
+router.get('/:username/stats', protect, async (req, res) => {
+  try {
+    const user = await User.findOne({ username: req.params.username });
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (user._id.toString() !== req.user._id.toString())
+      return res.status(403).json({ message: 'Not authorized' });
+
+    // Aggregate recipe stats
+    const recipeStats = await Recipe.aggregate([
+      { $match: { author: user._id } },
+      { $group: {
+          _id: null,
+          totalViews: { $sum: "$viewCount" },
+          totalLikes: { $sum: "$likeCount" },
+          totalSaves: { $sum: "$saveCount" }
+      }}
+    ]);
+
+    // Aggregate post stats
+    const postStats = await Post.aggregate([
+      { $match: { author: user._id } },
+      { $group: {
+          _id: null,
+          totalLikes: { $sum: "$likeCount" }
+      }}
+    ]);
+
+    res.json({
+      recipeStats: recipeStats[0] || { totalViews: 0, totalLikes: 0, totalSaves: 0 },
+      postStats: postStats[0] || { totalLikes: 0 },
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 });
 

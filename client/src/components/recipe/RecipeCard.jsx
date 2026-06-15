@@ -22,6 +22,7 @@ export const RecipeCard = ({ recipe, onLikeToggle }) => {
 
   const handleLike = async (e) => {
     e.preventDefault(); // Prevent Link navigation
+    e.stopPropagation(); // Prevent bubbling up to the Link component
     if (!isAuthenticated) return;
 
     try {

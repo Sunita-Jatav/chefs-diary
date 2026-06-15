@@ -13,6 +13,7 @@ import {
   getSubstitutions,
   streamAssistant,
   getStoryPrompts,
+  translateRecipe,
 }                          from '../controllers/ai.controller.js';
 import { protect }         from '../middleware/auth.middleware.js';
 
@@ -30,5 +31,8 @@ router.post('/substitutions',  getSubstitutions); // Dietary adaptation
 
 // ── Cooking assistant ─────────────────────────────────────────────
 router.post('/assistant/stream', streamAssistant); // SSE chat streaming
+
+// ── Translation ───────────────────────────────────────────────────
+router.post('/translate',        translateRecipe); // Recipe translation
 
 export default router;

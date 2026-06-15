@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { authAPI }  from '../../api/auth.api';
-import UseAuthStore from '../../store/useAuthStore';
+import useAuthStore from '../../store/useAuthStore';
 
 export const AuthModal = ({ onClose }) => {
   const [tab,     setTab]     = useState('login'); // 'login' | 'register'

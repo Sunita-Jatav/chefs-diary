@@ -19,7 +19,7 @@ const useNetworkStore = create((set, get) => ({
     set({ loading: true });
 
     try {
-      const { data } = await api.get('/network/feed', {
+      const { data } = await api.get('/api/network/feed', {
         params: { type: filter, page: currentPage },
       });
 
@@ -35,18 +35,18 @@ const useNetworkStore = create((set, get) => ({
   },
 
   createPost: async (payload) => {
-    const { data } = await api.post('/network/posts', payload);
+    const { data } = await api.post('/api/network/posts', payload);
     set(state => ({ posts: [data, ...state.posts] }));
     return data;
   },
 
   deletePost: async (id) => {
-    await api.delete(`/network/posts/${id}`);
+    await api.delete(`/api/network/posts/${id}`);
     set(state => ({ posts: state.posts.filter(p => p._id !== id) }));
   },
 
   toggleLike: async (id) => {
-    const { data } = await api.post(`/network/posts/${id}/like`);
+    const { data } = await api.post(`/api/network/posts/${id}/like`);
     set(state => ({
       posts: state.posts.map(p =>
         p._id === id ? { ...p, isLiked: data.liked, likeCount: data.likeCount } : p

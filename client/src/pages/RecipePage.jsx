@@ -8,6 +8,7 @@ import { useGroqStream } from '../hooks/useGroqStream';
 import UseAuthStore      from '../store/useAuthStore';
 import Comments from '../components/recipe/Comments';
 import { VoiceStepNav } from '../components/ui/VoiceStepNav';
+import { TranslationModule } from '../components/ui/TranslationModule';
 
 
 const moodEmoji = {
@@ -46,9 +47,10 @@ const SectionDivider = ({ title }) => (
 );
 
 // ─── Cooking Assistant ────────────────────────────────────────────
-// FIX: accepts chatInput + setChatInput props so VoiceStepNav dictation writes into this input
-const CookingAssistant = ({ recipe, chatInput, setChatInput }) => {
+// ─── Cooking Assistant ────────────────────────────────────────────
+const CookingAssistant = ({ recipe }) => {
   const [isOpen,   setIsOpen]   = useState(false);
+  const [chatInput, setChatInput] = useState('');
   const [messages, setMessages] = useState([{
     role: 'assistant',
     content: `Hi! I'm Sous, your cooking companion for "${recipe.title}". Ask me anything about this recipe — timing, techniques, substitutions.`,
@@ -251,7 +253,7 @@ export const RecipePage = ({ toast }) => {
   const [substitution,   setSubstitution]   = useState(null);
   const [subLoading,     setSubLoading]     = useState(false);
   const [subRestriction, setSubRestriction] = useState('vegan');
-  const [chatInput,      setChatInput]      = useState('');     // FIX: lifted here, passed to CookingAssistant
+  const [translatedRecipe, setTranslatedRecipe] = useState(null);
 
   useEffect(() => { fetchRecipe(); }, [slug]);
 
@@ -336,6 +338,7 @@ export const RecipePage = ({ toast }) => {
   const mood    = recipe.emotionalContext?.mood;
   const moodCfg = moodEmoji[mood];
   const isOwner = user?.id === recipe.author?._id?.toString();
+  const displayRecipe = translatedRecipe || recipe;
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--color-parchment)' }}>
@@ -382,7 +385,7 @@ export const RecipePage = ({ toast }) => {
             fontSize: 'clamp(2rem, 5vw, 3.5rem)',
             fontWeight: 700, color: 'white', lineHeight: 1.15, marginBottom: '1rem',
           }}>
-            {recipe.title}
+            {displayRecipe.title}
           </h1>
 
           {recipe.dedication?.dedicatedTo && (
@@ -450,6 +453,12 @@ export const RecipePage = ({ toast }) => {
 
           <div style={{ flex: 1 }} />
 
+          <TranslationModule 
+            recipe={recipe} 
+            onTranslate={setTranslatedRecipe} 
+            toast={toast} 
+          />
+
           {isOwner && (
             <Link to={`/recipe/${recipe._id}/edit`} style={{
               padding: '0.5rem 1rem', borderRadius: '0.625rem',
@@ -466,12 +475,12 @@ export const RecipePage = ({ toast }) => {
       {/* Main content */}
       <div style={{ maxWidth: '800px', margin: '0 auto', padding: '2rem 1rem 6rem' }}>
 
-        {recipe.description && (
+        {displayRecipe.description && (
           <p style={{
             fontFamily: 'var(--font-display)', fontSize: '1.15rem', fontStyle: 'italic',
             color: 'var(--color-ink-muted)', lineHeight: 1.7, marginBottom: '2rem',
           }}>
-            {recipe.description}
+            {displayRecipe.description}
           </p>
         )}
 
@@ -582,41 +591,52 @@ export const RecipePage = ({ toast }) => {
           background: 'white', border: '1px solid rgba(44,31,14,0.1)',
           borderRadius: '0.75rem', overflow: 'hidden', marginBottom: '2rem',
         }}>
-          {recipe.ingredients?.map((ing, i) => (
+          {(displayRecipe.ingredients || recipe.ingredients)?.map((ing, i) => {
+            // translated recipe returns an array of strings, while original is an array of objects
+            const isString = typeof ing === 'string';
+            return (
             <div key={i} style={{
               display: 'flex', alignItems: 'center', padding: '0.75rem 1.25rem',
-              borderBottom: i < recipe.ingredients.length - 1 ? '1px solid rgba(44,31,14,0.06)' : 'none',
+              borderBottom: i < (displayRecipe.ingredients || recipe.ingredients).length - 1 ? '1px solid rgba(44,31,14,0.06)' : 'none',
               background: i % 2 === 0 ? 'white' : 'rgba(245,237,224,0.3)',
             }}>
               <span style={{ width: '0.5rem', height: '0.5rem', borderRadius: '50%', background: 'var(--color-terracotta)', flexShrink: 0, marginRight: '0.875rem' }} />
-              <span style={{ fontWeight: 600, color: 'var(--color-terracotta)', minWidth: '5rem', fontSize: '0.9rem' }}>
-                {ing.quantity} {ing.unit}
-              </span>
-              <span style={{ color: 'var(--color-ink)', fontSize: '0.9rem', flex: 1 }}>{ing.name}</span>
-              {ing.notes && <span style={{ color: 'var(--color-ink-muted)', fontSize: '0.78rem', fontStyle: 'italic' }}>{ing.notes}</span>}
-              {ing.isOptional && (
-                <span style={{ fontSize: '0.7rem', color: 'var(--color-ink-muted)', background: 'rgba(44,31,14,0.06)', padding: '0.1rem 0.4rem', borderRadius: '9999px', marginLeft: '0.5rem' }}>
-                  optional
-                </span>
+              {isString ? (
+                <span style={{ color: 'var(--color-ink)', fontSize: '0.9rem', flex: 1 }}>{ing}</span>
+              ) : (
+                <>
+                  <span style={{ fontWeight: 600, color: 'var(--color-terracotta)', minWidth: '5rem', fontSize: '0.9rem' }}>
+                    {ing.quantity} {ing.unit}
+                  </span>
+                  <span style={{ color: 'var(--color-ink)', fontSize: '0.9rem', flex: 1 }}>{ing.name}</span>
+                  {ing.notes && <span style={{ color: 'var(--color-ink-muted)', fontSize: '0.78rem', fontStyle: 'italic' }}>{ing.notes}</span>}
+                  {ing.isOptional && (
+                    <span style={{ fontSize: '0.7rem', color: 'var(--color-ink-muted)', background: 'rgba(44,31,14,0.06)', padding: '0.1rem 0.4rem', borderRadius: '9999px', marginLeft: '0.5rem' }}>
+                      optional
+                    </span>
+                  )}
+                </>
               )}
             </div>
-          ))}
+          )})}
         </div>
 
         {/* Steps */}
         <SectionDivider title="Method" />
 
-        {/* FIX: VoiceStepNav wired to lifted chatInput state via onDictate */}
         <VoiceStepNav
-          steps={recipe.steps?.map(s => s.instruction) ?? []}
+          steps={displayRecipe.steps?.map(s => typeof s === 'string' ? s : s.instruction) ?? []}
           currentStep={activeStep}
           onStepChange={setActiveStep}
-          onDictate={(text) => setChatInput(prev => (prev ? prev + ' ' : '') + text)}
-          toast={toast}
         />
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem' }}>
-          {recipe.steps?.map((step, i) => (
+          {(displayRecipe.steps || recipe.steps)?.map((step, i) => {
+            const isString = typeof step === 'string';
+            const instruction = isString ? step : step.instruction;
+            const order = isString ? i + 1 : step.order;
+            
+            return (
             <div
               key={i}
               onClick={() => setActiveStep(activeStep === i ? 0 : i)}
@@ -639,9 +659,9 @@ export const RecipePage = ({ toast }) => {
                 </div>
                 <div style={{ flex: 1 }}>
                   <p style={{ color: 'var(--color-ink)', lineHeight: 1.7, margin: 0, fontSize: '0.95rem' }}>
-                    {step.instruction}
+                    {instruction}
                   </p>
-                  {activeStep === i && (
+                  {activeStep === i && !isString && (
                     <div style={{ marginTop: '0.75rem', display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
                       {step.duration && (
                         <span style={{ fontSize: '0.8rem', color: 'var(--color-saffron-dark)', fontWeight: 600, background: 'rgba(230,168,23,0.1)', padding: '0.2rem 0.6rem', borderRadius: '9999px' }}>
@@ -656,14 +676,14 @@ export const RecipePage = ({ toast }) => {
                     </div>
                   )}
                 </div>
-                {step.duration && activeStep !== i && (
+                {!isString && step.duration && activeStep !== i && (
                   <span style={{ fontSize: '0.75rem', color: 'var(--color-ink-muted)', whiteSpace: 'nowrap', flexShrink: 0 }}>
                     {step.duration}
                   </span>
                 )}
               </div>
             </div>
-          ))}
+          )})}
         </div>
 
         {recipe.tags?.length > 0 && (
@@ -687,13 +707,8 @@ export const RecipePage = ({ toast }) => {
         </div>
 
       </div>
-      {/* FIX: chatInput + setChatInput passed as props so voice dictation writes into Sous chat */}
       {recipe && (
-        <CookingAssistant
-          recipe={recipe}
-          chatInput={chatInput}
-          setChatInput={setChatInput}
-        />
+        <CookingAssistant recipe={recipe} />
       )}
     </div>
   );

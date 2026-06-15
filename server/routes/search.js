@@ -1,6 +1,6 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const Recipe = require('../models/Recipe');
+import Recipe from '../models/Recipe.js';
 
 // GET /api/search?q=&cuisine=&difficulty=&mood=&dietary=&sort=newest&page=1
 router.get('/', async (req, res) => {
@@ -48,4 +48,4 @@ router.get('/', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;
