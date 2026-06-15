@@ -14,7 +14,7 @@ import {
   createRecipe, getRecipes, getRecipeBySlug,
   getRecipesByUser, getMyRecipes,
   updateRecipe, deleteRecipe,
-  toggleLike, toggleSave,
+  toggleLike, toggleSave, rateRecipe
 }                            from '../controllers/recipe.controller.js';
 import { protect, optionalAuth } from '../middleware/auth.middleware.js';
 import { recipeValidation }  from '../middleware/validate.middleware.js';
@@ -43,5 +43,6 @@ router.delete('/:id',            protect, deleteRecipe);
 // ── Interaction routes ────────────────────────────────────────────────────
 router.post('/:id/like',         protect, toggleLike);
 router.post('/:id/save',         protect, toggleSave);
+router.post('/:id/rate',         protect, rateRecipe);
 
 export default router;

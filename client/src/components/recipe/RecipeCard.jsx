@@ -121,8 +121,9 @@ export const RecipeCard = ({ recipe, onLikeToggle }) => {
             </div>
 
             <div className="flex items-center gap-3 text-xs text-ink-muted font-body">
-              <span>♥ {likeCount}</span>
-              {recipe.totalTime && <span>⏱ {recipe.totalTime}m</span>}
+              <span title="Average Rating">⭐ {recipe.averageRating > 0 ? recipe.averageRating.toFixed(1) : 'New'}</span>
+              <span title="Likes">♥ {likeCount}</span>
+              {recipe.totalTime && <span title="Time">⏱ {recipe.totalTime}m</span>}
               <span className="tag capitalize">{recipe.difficulty}</span>
             </div>
           </div>

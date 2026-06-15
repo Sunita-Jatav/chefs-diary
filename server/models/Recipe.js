@@ -108,12 +108,21 @@ const RecipeSchema = new Schema(
     dedication:       { type: DedicationSchema,       default: () => ({}) },
     familyLegacy:     { type: FamilyLegacySchema,     default: () => ({}) },
 
-    // ── Social Metrics ────────────────────────────────────────────────────
-    likes:        [{ type: Schema.Types.ObjectId, ref: 'User' }],
-    likeCount:    { type: Number, default: 0, min: 0 },
-    saveCount:    { type: Number, default: 0, min: 0 },
-    commentCount: { type: Number, default: 0, min: 0 },
-    viewCount:    { type: Number, default: 0, min: 0 },
+    // ── Interaction Data ──────────────────────────────────────────────────
+    likes:       [{ type: Schema.Types.ObjectId, ref: 'User' }],
+    likeCount:   { type: Number, default: 0 },
+    saveCount:   { type: Number, default: 0 },
+    viewCount:   { type: Number, default: 0 },
+    commentCount:{ type: Number, default: 0 },
+    
+    ratings: [
+      {
+        user:  { type: Schema.Types.ObjectId, ref: 'User', required: true },
+        value: { type: Number, required: true, min: 1, max: 5 },
+      }
+    ],
+    averageRating: { type: Number, default: 0 },
+    ratingCount:   { type: Number, default: 0, min: 0 },
 
     // ── AI Metadata ───────────────────────────────────────────────────────
     aiGeneratedStory:    { type: Boolean, default: false },

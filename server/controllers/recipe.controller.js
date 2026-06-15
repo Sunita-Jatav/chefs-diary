@@ -244,14 +244,15 @@ export const getRecipeBySlug = async (req, res) => {
       });
     }
 
-    // If the request is authenticated (via optionalAuth middleware),
-    // add personalized flags: did this user like/save this recipe?
     let userInteraction = null;
     if (req.user) {
       const userId = req.user._id.toString();
+      const existingRating = recipe.ratings?.find(r => r.user.toString() === userId);
+      
       userInteraction = {
-        hasLiked:  recipe.likes.some(id => id.toString() === userId),
-        hasSaved:  req.user.savedRecipes.some(id => id.toString() === recipe._id.toString()),
+        hasLiked:   recipe.likes.some(id => id.toString() === userId),
+        hasSaved:   req.user.savedRecipes.some(id => id.toString() === recipe._id.toString()),
+        userRating: existingRating ? existingRating.value : 0,
       };
     }
 
@@ -575,5 +576,58 @@ export const toggleSave = async (req, res) => {
   } catch (error) {
     console.error('toggleSave error:', error);
     return res.status(500).json({ success: false, message: 'Failed to save recipe.' });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────
+// @route   POST /api/recipes/:id/rate
+// @access  Protected
+// Submit a 1-5 star rating for a recipe.
+// Updates existing rating if user already rated.
+// ─────────────────────────────────────────────────────────────────
+export const rateRecipe = async (req, res) => {
+  try {
+    const { rating } = req.body;
+    const userId = req.user._id;
+
+    if (!rating || rating < 1 || rating > 5) {
+      return res.status(400).json({ success: false, message: 'Rating must be between 1 and 5.' });
+    }
+
+    const recipe = await Recipe.findById(req.params.id);
+    if (!recipe) {
+      return res.status(404).json({ success: false, message: 'Recipe not found.' });
+    }
+
+    // Check if user already rated
+    const existingRatingIndex = recipe.ratings.findIndex(r => r.user.toString() === userId.toString());
+
+    if (existingRatingIndex >= 0) {
+      // Update existing rating
+      recipe.ratings[existingRatingIndex].value = rating;
+    } else {
+      // Add new rating
+      recipe.ratings.push({ user: userId, value: rating });
+    }
+
+    // Recalculate average rating
+    const totalRating = recipe.ratings.reduce((sum, r) => sum + r.value, 0);
+    recipe.averageRating = totalRating / recipe.ratings.length;
+    recipe.ratingCount = recipe.ratings.length;
+
+    await recipe.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Rating submitted!',
+      data: {
+        averageRating: recipe.averageRating,
+        ratingCount: recipe.ratingCount,
+        userRating: rating
+      }
+    });
+  } catch (error) {
+    console.error('rateRecipe error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to submit rating.' });
   }
 };

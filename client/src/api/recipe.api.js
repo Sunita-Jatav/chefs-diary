@@ -14,4 +14,5 @@ export const recipeAPI = {
   delete:      (id)           => api.delete(`/api/recipes/${id}`),
   toggleLike:  (id)           => api.post(`/api/recipes/${id}/like`),
   toggleSave:  (id)           => api.post(`/api/recipes/${id}/save`),
+  rateRecipe:  (id, rating)   => api.post(`/api/recipes/${id}/rate`, { rating }),
 };

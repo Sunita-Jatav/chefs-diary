@@ -1,5 +1,6 @@
 // src/pages/HomePage.jsx — The public discovery feed
 import { useState, useEffect } from 'react';
+import { Filter } from 'lucide-react';
 import { recipeAPI }    from '../api/recipe.api';
 import { RecipeCard }   from '../components/recipe/RecipeCard';
 import UseAuthStore     from '../store/useAuthStore';
@@ -10,6 +11,8 @@ const SORTS = [
   { value: 'popular', label: 'Popular'  },
   { value: 'trending',label: 'Trending' },
 ];
+const DIETARY_TAGS = ['', 'Vegan', 'Vegetarian', 'Gluten-Free', 'Dairy-Free', 'Nut-Free', 'Keto', 'Paleo', 'Halal', 'Kosher'];
+const CUISINES = ['', 'Indian', 'Italian', 'Mexican', 'Chinese', 'Japanese', 'Thai', 'French', 'Mediterranean', 'American', 'Middle Eastern'];
 
 export const HomePage = () => {
   const [recipes,  setRecipes]  = useState([]);
@@ -18,6 +21,10 @@ export const HomePage = () => {
   const [search,   setSearch]   = useState('');
   const [mood,     setMood]     = useState('');
   const [sort,     setSort]     = useState('latest');
+  const [showFilters, setShowFilters] = useState(false);
+  const [difficulty, setDifficulty] = useState('');
+  const [dietary, setDietary] = useState('');
+  const [cuisine, setCuisine] = useState('');
   const [page,     setPage]     = useState(1);
   const [pagination, setPagination] = useState(null);
   const { isAuthenticated } = UseAuthStore();
@@ -29,6 +36,9 @@ export const HomePage = () => {
       const params = { page, sort, limit: 12 };
       if (search) params.search = search;
       if (mood)   params.mood   = mood;
+      if (difficulty) params.difficulty = difficulty;
+      if (dietary) params.dietary = dietary;
+      if (cuisine) params.cuisine = cuisine;
 
       const res = await recipeAPI.getAll(params);
       setRecipes(res.data.data.recipes);
@@ -42,7 +52,7 @@ export const HomePage = () => {
 
   useEffect(() => {
     fetchRecipes();
-  }, [page, sort, mood]); // Refetch when filters change
+  }, [page, sort, mood, difficulty, dietary, cuisine]); // Refetch when filters change
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -85,7 +95,57 @@ export const HomePage = () => {
             <button type="submit" className="btn-primary px-6">
               Search
             </button>
+            <button type="button" onClick={() => setShowFilters(!showFilters)} className={`btn-secondary p-3 flex items-center justify-center transition-colors ${showFilters ? 'bg-terracotta text-white border-terracotta' : ''}`}>
+              <Filter size={20} />
+            </button>
           </form>
+
+          {/* Advanced Filters Panel */}
+          {showFilters && (
+            <div className="mt-4 p-6 bg-white/80 backdrop-blur-md rounded-2xl border border-ink/10 text-left fade-in max-w-lg mx-auto shadow-sm">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="font-display text-lg text-ink font-semibold">Advanced Filters</h3>
+                <button type="button" onClick={() => { setDifficulty(''); setDietary(''); setCuisine(''); setPage(1); }} className="text-sm text-terracotta hover:underline font-medium">
+                  Clear Filters
+                </button>
+              </div>
+              <div className="grid grid-cols-1 gap-4">
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Difficulty */}
+                  <div>
+                    <label className="block text-xs font-bold text-ink-muted uppercase tracking-wider mb-2">Difficulty</label>
+                    <select value={difficulty} onChange={e => { setDifficulty(e.target.value); setPage(1); }} className="input w-full bg-white text-sm">
+                      <option value="">Any Difficulty</option>
+                      <option value="beginner">Beginner</option>
+                      <option value="intermediate">Intermediate</option>
+                      <option value="advanced">Advanced</option>
+                      <option value="professional">Professional</option>
+                    </select>
+                  </div>
+                  {/* Dietary */}
+                  <div>
+                    <label className="block text-xs font-bold text-ink-muted uppercase tracking-wider mb-2">Dietary</label>
+                    <select value={dietary} onChange={e => { setDietary(e.target.value); setPage(1); }} className="input w-full bg-white text-sm">
+                      <option value="">Any Dietary</option>
+                      {DIETARY_TAGS.filter(Boolean).map(tag => (
+                        <option key={tag} value={tag}>{tag}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                {/* Cuisine */}
+                <div>
+                  <label className="block text-xs font-bold text-ink-muted uppercase tracking-wider mb-2">Cuisine</label>
+                  <select value={cuisine} onChange={e => { setCuisine(e.target.value); setPage(1); }} className="input w-full bg-white text-sm">
+                    <option value="">Any Cuisine</option>
+                    {CUISINES.filter(Boolean).map(c => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 

@@ -249,6 +249,7 @@ export const RecipePage = ({ toast }) => {
   const [liked,          setLiked]          = useState(false);
   const [likeCount,      setLikeCount]      = useState(0);
   const [saved,          setSaved]          = useState(false);
+  const [userRating,     setUserRating]     = useState(0);
   const [activeStep,     setActiveStep]     = useState(0);      // FIX: single declaration, starts at 0
   const [substitution,   setSubstitution]   = useState(null);
   const [subLoading,     setSubLoading]     = useState(false);
@@ -268,6 +269,7 @@ export const RecipePage = ({ toast }) => {
       if (userInteraction) {
         setLiked(userInteraction.hasLiked);
         setSaved(userInteraction.hasSaved);
+        setUserRating(userInteraction.userRating || 0);
       }
     } catch {
       setError('Recipe not found.');
@@ -292,6 +294,16 @@ export const RecipePage = ({ toast }) => {
       setSaved(res.data.data.saved);
       toast?.success(res.data.data.saved ? 'Saved to your collection!' : 'Removed from saved.');
     } catch { toast?.error('Failed to save recipe.'); }
+  };
+
+  const handleRate = async (rating) => {
+    if (!isAuthenticated) { toast?.error('Sign in to rate recipes.'); return; }
+    try {
+      const res = await recipeAPI.rateRecipe(recipe._id, rating);
+      setUserRating(res.data.data.userRating);
+      setRecipe(prev => ({ ...prev, averageRating: res.data.data.averageRating, ratingCount: res.data.data.ratingCount }));
+      toast?.success(res.data.message);
+    } catch { toast?.error('Failed to submit rating.'); }
   };
 
   const handleSubstitution = async () => {
@@ -414,6 +426,7 @@ export const RecipePage = ({ toast }) => {
               <span style={{ fontSize: '0.875rem', fontWeight: 500 }}>{recipe.author?.displayName}</span>
             </Link>
             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              {recipe.averageRating > 0 && <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.8rem' }}>⭐ {recipe.averageRating.toFixed(1)} ({recipe.ratingCount})</span>}
               {recipe.totalTime && <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.8rem' }}>⏱ {recipe.totalTime} min</span>}
               <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.8rem' }}>👥 Serves {recipe.servings}</span>
               <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.8rem', textTransform: 'capitalize' }}>📊 {recipe.difficulty}</span>
@@ -448,16 +461,37 @@ export const RecipePage = ({ toast }) => {
             color: saved ? 'var(--color-saffron-dark)' : 'var(--color-ink-muted)',
             cursor: 'pointer', fontSize: '0.875rem', fontWeight: 500, transition: 'all 0.2s',
           }}>
-            {saved ? '🔖' : '📌'} {saved ? 'Saved' : 'Save'}
+            {saved ? 'Saved' : 'Save'}
           </button>
+          
+          <div style={{ width: '1px', height: '1.5rem', background: 'rgba(44,31,14,0.1)', margin: '0 0.25rem' }} />
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+            {[1, 2, 3, 4, 5].map(star => (
+              <button
+                key={star}
+                onClick={() => handleRate(star)}
+                style={{
+                  background: 'transparent', border: 'none', cursor: 'pointer',
+                  fontSize: '1.25rem', padding: '0 0.1rem',
+                  color: star <= userRating ? 'var(--color-saffron)' : 'rgba(44,31,14,0.15)',
+                  transition: 'transform 0.1s',
+                }}
+                onMouseEnter={(e) => e.target.style.transform = 'scale(1.2)'}
+                onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+                title={`Rate ${star} stars`}
+              >
+                ★
+              </button>
+            ))}
+          </div>
 
-          <div style={{ flex: 1 }} />
-
-          <TranslationModule 
-            recipe={recipe} 
-            onTranslate={setTranslatedRecipe} 
-            toast={toast} 
-          />
+          <div style={{ marginLeft: 'auto' }}>
+            <TranslationModule 
+              recipe={recipe} 
+              onTranslate={(translated) => setTranslatedRecipe(translated)} 
+            />
+          </div>
 
           {isOwner && (
             <Link to={`/recipe/${recipe._id}/edit`} style={{
